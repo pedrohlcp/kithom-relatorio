@@ -69,9 +69,50 @@
   .toggle-row { display: flex; justify-content: center; padding: 4px 0; }
   .btn-toggle { background: transparent; border: 1px solid var(--border); border-radius: 8px; padding: 7px 22px; font-size: 12px; color: var(--muted); cursor: pointer; transition: all 0.15s; }
   .btn-toggle:hover { background: var(--bg); color: var(--text); border-color: var(--accent); }
+
+  /* AUTH OVERLAY */
+  #auth-overlay {
+    position: fixed; inset: 0; z-index: 9999;
+    background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+  }
+  #auth-overlay.hidden { display: none; }
+  .auth-box {
+    background: var(--card); border-radius: 16px; padding: 40px 36px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.10); border: 1px solid var(--border);
+    width: 340px; text-align: center;
+  }
+  .auth-box h2 { font-size: 17px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .auth-box p  { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
+  .auth-box input {
+    width: 100%; padding: 11px 14px; border-radius: 8px;
+    border: 1px solid var(--border); font-size: 14px;
+    background: var(--bg); color: var(--text); outline: none;
+    margin-bottom: 12px; transition: border-color 0.2s;
+  }
+  .auth-box input:focus { border-color: var(--accent); }
+  .auth-box button {
+    width: 100%; padding: 11px; border-radius: 8px; border: none;
+    background: var(--accent); color: #fff; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: opacity 0.2s;
+  }
+  .auth-box button:hover { opacity: 0.88; }
+  .auth-error { font-size: 12px; color: var(--red); margin-top: 8px; min-height: 16px; }
 </style>
 </head>
 <body>
+
+<!-- AUTH OVERLAY -->
+<div id="auth-overlay">
+  <div class="auth-box">
+    <h2>Relatório Gerencial Kithom</h2>
+    <p>Digite a senha para acessar</p>
+    <input type="password" id="auth-input" placeholder="Senha" onkeydown="if(event.key==='Enter')checkAuth()">
+    <button onclick="checkAuth()">Entrar</button>
+    <div class="auth-error" id="auth-error"></div>
+  </div>
+</div>
+
 <div class="container">
 
   <!-- HEADER -->
@@ -229,6 +270,26 @@
 </div><!-- /container -->
 
 <script>
+// ─────────────────────────────────────────────
+// AUTH
+// ─────────────────────────────────────────────
+const SENHA = 'Kithom2831';
+function checkAuth() {
+  const val = document.getElementById('auth-input').value;
+  if (val === SENHA) {
+    sessionStorage.setItem('kithom_auth', '1');
+    document.getElementById('auth-overlay').classList.add('hidden');
+    document.getElementById('auth-input').value = '';
+  } else {
+    document.getElementById('auth-error').textContent = 'Senha incorreta.';
+    document.getElementById('auth-input').value = '';
+    document.getElementById('auth-input').focus();
+  }
+}
+if (sessionStorage.getItem('kithom_auth') === '1') {
+  document.getElementById('auth-overlay').classList.add('hidden');
+}
+
 // ─────────────────────────────────────────────
 // DATA (injected by gerar_relatorio.py)
 // ─────────────────────────────────────────────
