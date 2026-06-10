@@ -1,0 +1,5 @@
+# Publicar APENAS o relatório HTML — nada mais
+*
+!.gitignore
+!index.html
+!relatorio_diario.html

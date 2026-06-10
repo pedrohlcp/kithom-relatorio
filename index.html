@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Relatório Gerencial Diário — Grupo Kithom</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --cyan: #1BC8D4;
+    --blue: #0064C5;
+    --bg: #F0F4F8;
+    --card: #FFFFFF;
+    --border: #E2E8F0;
+    --text: #1A202C;
+    --muted: #718096;
+    --green: #059669;
+    --red: #DC2626;
+    --orange: #D97706;
+    --accent: #1BC8D4;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  .container { max-width: 1400px; margin: 0 auto; padding: 28px 24px; }
+
+  /* HEADER */
+  .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; flex-wrap: wrap; gap: 16px; }
+  .header-title h1 { font-size: 20px; font-weight: 600; color: var(--text); letter-spacing: -0.3px; }
+  .header-title p  { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+  /* TABS */
+  .tabs { display: flex; background: var(--card); border-radius: 10px; padding: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); gap: 2px; }
+  .tab { border: none; background: transparent; padding: 8px 20px; border-radius: 7px; font-size: 13px; font-weight: 500; color: var(--muted); cursor: pointer; transition: all 0.2s; }
+  .tab:hover { color: var(--text); background: var(--bg); }
+  .tab.active { background: var(--accent); color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.18); }
+
+  /* KPI GRID */
+  .kpi-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; margin-bottom: 22px; }
+  @media (max-width: 1100px) { .kpi-grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 700px)  { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+  .kpi-card { background: var(--card); border-radius: 12px; padding: 18px 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid var(--border); border-left: 3px solid var(--accent); transition: border-left-color 0.2s; }
+  .kpi-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); margin-bottom: 8px; }
+  .kpi-value { font-size: 22px; font-weight: 700; color: var(--text); letter-spacing: -0.5px; line-height: 1; margin-bottom: 6px; }
+  .kpi-sub   { font-size: 12px; color: var(--muted); }
+  .kpi-sub span { font-weight: 600; }
+  .kpi-neg .kpi-value  { color: var(--red); }
+  .kpi-warn .kpi-value { color: var(--orange); }
+
+  /* CHARTS */
+  .charts-stack { display: flex; flex-direction: column; gap: 16px; }
+  .chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 800px) { .chart-row { grid-template-columns: 1fr; } }
+  .chart-card { background: var(--card); border-radius: 12px; padding: 20px 20px 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid var(--border); border-left: 3px solid var(--accent); transition: border-left-color 0.2s; }
+  .chart-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; }
+  .chart-title    { font-size: 13px; font-weight: 600; color: var(--text); }
+  .chart-subtitle { font-size: 11px; color: var(--muted); margin-top: 3px; }
+  .chart-legend { display: flex; gap: 12px; flex-shrink: 0; margin-left: 12px; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--muted); white-space: nowrap; }
+  .legend-dot         { width: 10px; height: 3px; border-radius: 2px; }
+  .legend-dot.solid   { background: var(--accent); height: 3px; transition: background 0.2s; }
+  .legend-dot.dashed  { height: 3px; background: repeating-linear-gradient(90deg,#94A3B8 0,#94A3B8 4px,transparent 4px,transparent 7px); }
+  .legend-dot.bar     { width: 10px; height: 10px; border-radius: 2px; background: var(--accent); opacity: 0.45; transition: background 0.2s; }
+  .canvas-wrap      { position: relative; height: 200px; }
+  .canvas-wrap.tall { position: relative; height: 240px; }
+
+  /* Collapse toggle */
+  .secondary-charts          { display: flex; flex-direction: column; gap: 16px; }
+  .secondary-charts.collapsed { display: none; }
+  .toggle-row { display: flex; justify-content: center; padding: 4px 0; }
+  .btn-toggle { background: transparent; border: 1px solid var(--border); border-radius: 8px; padding: 7px 22px; font-size: 12px; color: var(--muted); cursor: pointer; transition: all 0.15s; }
+  .btn-toggle:hover { background: var(--bg); color: var(--text); border-color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-title">
+      <h1>Relatório Gerencial Diário — Grupo Kithom</h1>
+      <p>Dados de 01 a 09/06/2026 · Mercado Livre</p>
+    </div>
+    <div class="tabs">
+      <button class="tab active" onclick="switchAccount('consolidado')">Consolidado</button>
+      <button class="tab" onclick="switchAccount('kdecor')">KDecor</button>
+      <button class="tab" onclick="switchAccount('comercial')">Comercial</button>
+    </div>
+  </div>
+
+  <!-- KPI CARDS -->
+  <div class="kpi-grid" id="kpi-grid"></div>
+
+  <!-- CHARTS -->
+  <div class="charts-stack">
+
+    <!-- Vendas Líquidas -->
+    <div class="chart-card">
+      <div class="chart-header">
+        <div>
+          <div class="chart-title">Vendas Líquidas — <span class="month-label"></span></div>
+          <div class="chart-subtitle" id="proj-label-liq"></div>
+        </div>
+        <div class="chart-legend">
+          <div class="legend-item"><div class="legend-dot solid"></div>Diário</div>
+          <div class="legend-item"><div class="legend-dot dashed"></div>Média</div>
+        </div>
+      </div>
+      <div class="canvas-wrap tall"><canvas id="chart-liq"></canvas></div>
+    </div>
+
+    <!-- Toggle -->
+    <div class="toggle-row">
+      <button id="btn-toggle-secondary" class="btn-toggle" onclick="toggleSecondary()">▼&nbsp; Expandir Detalhes</button>
+    </div>
+
+    <!-- Collapsible: Brutas + Dev + Can -->
+    <div id="secondary-charts" class="secondary-charts collapsed">
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Vendas Brutas — <span class="month-label"></span></div>
+            <div class="chart-subtitle" id="proj-label-br"></div>
+          </div>
+          <div class="chart-legend">
+            <div class="legend-item"><div class="legend-dot solid"></div>Diário</div>
+            <div class="legend-item"><div class="legend-dot dashed"></div>Média</div>
+          </div>
+        </div>
+        <div class="canvas-wrap tall"><canvas id="chart-br"></canvas></div>
+      </div>
+
+      <div class="chart-row">
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">Devoluções — <span class="month-label"></span></div>
+              <div class="chart-subtitle" id="sub-dev"></div>
+            </div>
+            <div class="chart-legend">
+              <div class="legend-item"><div class="legend-dot solid"></div>R$</div>
+              <div class="legend-item"><div class="legend-dot bar"></div>Qtd.</div>
+              <div class="legend-item"><div class="legend-dot dashed"></div>Média R$</div>
+            </div>
+          </div>
+          <div class="canvas-wrap"><canvas id="chart-dev"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">Cancelamentos — <span class="month-label"></span></div>
+              <div class="chart-subtitle" id="sub-can"></div>
+            </div>
+            <div class="chart-legend">
+              <div class="legend-item"><div class="legend-dot solid"></div>R$</div>
+              <div class="legend-item"><div class="legend-dot bar"></div>Qtd.</div>
+              <div class="legend-item"><div class="legend-dot dashed"></div>Média R$</div>
+            </div>
+          </div>
+          <div class="canvas-wrap"><canvas id="chart-can"></canvas></div>
+        </div>
+      </div>
+
+    </div><!-- /secondary-charts -->
+
+    <!-- Visitas | Conversão -->
+    <div class="chart-row">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Visitas — <span class="month-label"></span></div>
+            <div class="chart-subtitle" id="proj-label-vis"></div>
+          </div>
+          <div class="chart-legend">
+            <div class="legend-item"><div class="legend-dot solid"></div>Diário</div>
+            <div class="legend-item"><div class="legend-dot dashed"></div>Média</div>
+          </div>
+        </div>
+        <div class="canvas-wrap"><canvas id="chart-vis"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Conversão — <span class="month-label"></span></div>
+            <div class="chart-subtitle" id="proj-label-conv"></div>
+          </div>
+          <div class="chart-legend">
+            <div class="legend-item"><div class="legend-dot solid"></div>Diário</div>
+            <div class="legend-item"><div class="legend-dot dashed"></div>Média</div>
+          </div>
+        </div>
+        <div class="canvas-wrap"><canvas id="chart-conv"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Ticket Médio -->
+    <div class="chart-row">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Ticket Médio — Por Pedido</div>
+            <div class="chart-subtitle" id="sub-tkped"></div>
+          </div>
+          <div class="chart-legend">
+            <div class="legend-item"><div class="legend-dot solid"></div>R$</div>
+            <div class="legend-item"><div class="legend-dot bar"></div>Pedidos</div>
+            <div class="legend-item"><div class="legend-dot dashed"></div>Média R$</div>
+          </div>
+        </div>
+        <div class="canvas-wrap"><canvas id="chart-tkped"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Ticket Médio — Por Unidade</div>
+            <div class="chart-subtitle" id="sub-tkun"></div>
+          </div>
+          <div class="chart-legend">
+            <div class="legend-item"><div class="legend-dot solid"></div>R$</div>
+            <div class="legend-item"><div class="legend-dot bar"></div>Unidades</div>
+            <div class="legend-item"><div class="legend-dot dashed"></div>Média R$</div>
+          </div>
+        </div>
+        <div class="canvas-wrap"><canvas id="chart-tkun"></canvas></div>
+      </div>
+    </div>
+
+  </div><!-- /charts-stack -->
+</div><!-- /container -->
+
+<script>
+// ─────────────────────────────────────────────
+// DATA (injected by gerar_relatorio.py)
+// ─────────────────────────────────────────────
+const DATA = {"consolidado": {"brutas": [26137.2, 22631.24, 19764.87, 25421.48, 18138.56, 23437.51, 23701.93, 20568.67, 24319.87], "canceladas_val": [1135.3, 1191.81, 720.58, 1397.66, 677.72, 446.05, 347.22, 1031.18, 754.36], "devolvidas_val": [423.85, 272.3, 250.15, 35.43, 0, 0, 0, 0, 0], "liq": [23018.9, 19703.02, 17823.41, 22555.3, 16783.12, 22545.41, 23007.49, 18506.31, 22811.15], "pedidos": [309, 283, 248, 309, 247, 293, 291, 247, 303], "units": [350, 303, 264, 333, 262, 316, 321, 266, 342], "visits": [3927, 4145, 3688, 4058, 3595, 3781, 4008, 3477, 3617], "conv": [7.87, 6.83, 6.72, 7.61, 6.87, 7.75, 7.26, 7.1, 8.38], "tk_ped": [84.59, 79.97, 79.7, 82.27, 73.44, 79.99, 81.45, 83.27, 80.26], "tk_un": [74.68, 74.69, 74.87, 76.34, 69.23, 74.17, 73.84, 77.33, 71.11], "canceladas_count": [14, 14, 10, 16, 11, 6, 8, 13, 8], "devolvidas_count": [6, 5, 4, 1, 0, 0, 0, 0, 0], "name": "Consolidado"}, "kdecor": {"brutas": [12724.81, 9182.4, 9024.22, 11293.03, 6539.8, 8918.53, 8285.08, 7054.97, 8960.5], "canceladas_val": [532.02, 155.98, 155.98, 457.87, 46.91, 155.98, 0, 51.67, 311.96], "devolvidas_val": [286.32, 158.08, 103.59, 0, 0, 0, 0, 0, 0], "liq": [11088.13, 8554.28, 8505.08, 10377.29, 6445.98, 8606.57, 8285.08, 6951.63, 8336.58], "pedidos": [163, 119, 117, 146, 86, 121, 108, 90, 118], "units": [163, 119, 117, 146, 87, 121, 110, 90, 118], "visits": [1293, 1357, 1166, 1511, 1043, 1062, 1272, 960, 975], "conv": [12.61, 8.77, 10.03, 9.66, 8.25, 11.39, 8.49, 9.38, 12.1], "tk_ped": [73.05, 74.52, 74.91, 74.21, 75.5, 72.42, 76.71, 77.81, 73.29], "tk_un": [73.05, 74.52, 74.91, 74.21, 74.63, 72.42, 75.32, 77.81, 73.29], "canceladas_count": [7, 2, 2, 5, 1, 2, 0, 1, 4], "devolvidas_count": [4, 3, 1, 0, 0, 0, 0, 0, 0], "name": "KDecor"}, "comercial": {"brutas": [13412.39, 13448.84, 10740.65, 14128.45, 11598.76, 14518.98, 15416.85, 13513.7, 15359.37], "canceladas_val": [603.28, 1035.83, 564.6, 939.79, 630.81, 290.07, 347.22, 979.51, 442.4], "devolvidas_val": [137.53, 114.22, 146.56, 35.43, 0, 0, 0, 0, 0], "liq": [11930.77, 11148.74, 9318.33, 12178.01, 10337.14, 13938.84, 14722.41, 11554.68, 14474.57], "pedidos": [146, 164, 131, 163, 161, 172, 183, 157, 185], "units": [187, 184, 147, 187, 175, 195, 211, 176, 224], "visits": [2634, 2788, 2522, 2547, 2552, 2719, 2736, 2517, 2642], "conv": [5.54, 5.88, 5.19, 6.4, 6.31, 6.33, 6.69, 6.24, 7.0], "tk_ped": [86.79, 74.99, 76.56, 80.69, 68.12, 82.73, 82.35, 79.84, 80.63], "tk_un": [67.76, 66.84, 68.23, 70.34, 62.67, 72.97, 71.42, 71.22, 66.59], "canceladas_count": [7, 12, 8, 11, 10, 4, 8, 12, 4], "devolvidas_count": [2, 2, 3, 1, 0, 0, 0, 0, 0], "name": "Comercial"}};
+
+// ─────────────────────────────────────────────
+// ACCOUNT STYLES
+// ─────────────────────────────────────────────
+const ACC_STYLE = {
+  consolidado: { main:'#0891B2', fill:'rgba(8,145,178,0.11)',  bar:'rgba(8,145,178,0.40)'  },
+  kdecor:      { main:'#1BC8D4', fill:'rgba(27,200,212,0.11)', bar:'rgba(27,200,212,0.40)' },
+  comercial:   { main:'#0064C5', fill:'rgba(0,100,197,0.11)',  bar:'rgba(0,100,197,0.40)'  },
+};
+
+// ─────────────────────────────────────────────
+// HELPERS
+// ─────────────────────────────────────────────
+const MUTED   = '#94A3B8';
+const DAYS    = 30;
+const Y_WIDTH = 82; // fixed y-axis width for alignment across paired charts
+
+const MONTHS_PT = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho',
+                   'Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const _d = new Date();
+const MONTH_LABEL = MONTHS_PT[_d.getMonth()] + '/' + String(_d.getFullYear()).slice(-2);
+
+function avg(a)  { return a.reduce((s,v)=>s+v,0)/a.length; }
+function sum(a)  { return a.reduce((s,v)=>s+v,0); }
+function fmt(v, dec=0) {
+  return 'R$ ' + v.toLocaleString('pt-BR',{minimumFractionDigits:dec,maximumFractionDigits:dec});
+}
+function fmtInt(v) { return Math.round(v).toLocaleString('pt-BR'); }
+function fmtPct(v) { return v.toFixed(2).replace('.',',') + '%'; }
+
+function buildSeries(values) {
+  const a = avg(values);
+  const actual  = Array(DAYS).fill(null); values.forEach((v,i) => actual[i] = v);
+  const avgLine = Array(DAYS).fill(a);
+  return { actual, avgLine, avg: a };
+}
+
+// ─────────────────────────────────────────────
+// KPI RENDERING
+// ─────────────────────────────────────────────
+const KPI_DEFS = [
+  { key:'brutas',         label:'Vendas Brutas',  fmt: v=>fmt(v),    cls:''         },
+  { key:'canceladas_val', label:'Canceladas',      fmt: v=>fmt(v),    cls:'kpi-neg'  },
+  { key:'devolvidas_val', label:'Devolvidas',      fmt: v=>fmt(v,2),  cls:'kpi-warn' },
+  { key:'liq',            label:'Vendas Líquidas', fmt: v=>fmt(v),    cls:''         },
+  { key:'tk_ped',         label:'Ticket Médio',    fmt: v=>fmt(v,2),  cls:''         },
+  { key:'conv',           label:'Conversão',       fmt: v=>fmtPct(v), cls:''         },
+];
+
+function renderKPIs(acc) {
+  const d = DATA[acc];
+  const N = d.liq.length;
+  const grid = document.getElementById('kpi-grid');
+  grid.innerHTML = '';
+  KPI_DEFS.forEach(def => {
+    const mtd   = def.key==='tk_ped' ? avg(d[def.key])
+                : def.key==='conv'   ? sum(d.pedidos)/sum(d.visits)*100
+                : sum(d[def.key]);
+    const ontem = def.key==='tk_ped' ? d[def.key][N-1]
+                : def.key==='conv'   ? d.conv[N-1]
+                : d[def.key][N-1];
+    const card = document.createElement('div');
+    card.className = 'kpi-card ' + (def.cls||'');
+    card.innerHTML = `<div class="kpi-label">${def.label}</div>
+      <div class="kpi-value">${def.fmt(mtd)}</div>
+      <div class="kpi-sub">Ontem · <span>${def.fmt(ontem)}</span></div>`;
+    grid.appendChild(card);
+  });
+}
+
+// ─────────────────────────────────────────────
+// SUBTITLES (dynamic, per account)
+// ─────────────────────────────────────────────
+function updateSubtitles(acc) {
+  const d = DATA[acc];
+  const sumLiq = sum(d.liq);
+  const sumBr  = sum(d.brutas);
+  const sumVis = sum(d.visits);
+  const sumDev = sum(d.devolvidas_val);
+  const sumCan = sum(d.canceladas_val);
+  const cntDev = sum(d.devolvidas_count);
+  const cntCan = sum(d.canceladas_count);
+  const cntPed = sum(d.pedidos);
+  const cntUn  = sum(d.units);
+
+  const liqProj = avg(d.liq)    * DAYS;
+  const brProj  = avg(d.brutas) * DAYS;
+  const visProj = avg(d.visits) * DAYS;
+  const convAvg = sum(d.pedidos) / sum(d.visits) * 100;
+
+  // Vendas Líquidas, Brutas, Visitas — MTD + projeção
+  document.getElementById('proj-label-liq').textContent =
+    `MTD: ${fmt(sumLiq)} · Projeção ${MONTH_LABEL}: ${fmt(liqProj)}`;
+  document.getElementById('proj-label-br').textContent  =
+    `MTD: ${fmt(sumBr)} · Projeção ${MONTH_LABEL}: ${fmt(brProj)}`;
+  document.getElementById('proj-label-vis').textContent =
+    `MTD: ${fmtInt(sumVis)} visitas · Projeção ${MONTH_LABEL}: ${fmtInt(visProj)}`;
+  document.getElementById('proj-label-conv').textContent =
+    `Média: ${fmtPct(convAvg)}`;
+
+  // Devoluções / Cancelamentos — totais
+  const devLabel = cntDev === 1 ? '1 devolução' : `${fmtInt(cntDev)} devoluções`;
+  const canLabel = cntCan === 1 ? '1 cancelamento' : `${fmtInt(cntCan)} cancelamentos`;
+  document.getElementById('sub-dev').textContent = `${devLabel} · ${fmt(sumDev, 2)}`;
+  document.getElementById('sub-can').textContent = `${canLabel} · ${fmt(sumCan)}`;
+
+  // Ticket Médio — total quantidades
+  document.getElementById('sub-tkped').textContent = `${fmtInt(cntPed)} pedidos no período`;
+  document.getElementById('sub-tkun').textContent  = `${fmtInt(cntUn)} unidades no período`;
+}
+
+// ─────────────────────────────────────────────
+// CHART FACTORY
+// ─────────────────────────────────────────────
+const xLabels = Array.from({length:DAYS},(_,i)=>i+1);
+let charts = {};
+let currentAcc = 'consolidado';
+function style() { return ACC_STYLE[currentAcc]; }
+
+// Fixed y-axis width: keeps paired charts aligned
+function afterFit(scale) { scale.width = Y_WIDTH; }
+
+function baseOpts(yFmt) {
+  return {
+    responsive:true, maintainAspectRatio:false,
+    interaction:{ mode:'index', intersect:false },
+    plugins:{
+      legend:{ display:false },
+      tooltip:{
+        backgroundColor:'#1E293B', titleColor:'#94A3B8', bodyColor:'#F8FAFC', padding:10, cornerRadius:8,
+        callbacks:{
+          title: c=>`Dia ${c[0].label}`,
+          label: c=>c.raw===null ? null : ` ${c.dataset.label}: ${yFmt(c.raw)}`
+        }
+      }
+    },
+    scales:{
+      x:{ border:{display:false}, grid:{color:'#F1F5F9'}, ticks:{color:'#94A3B8',font:{size:11},maxTicksLimit:10} },
+      y:{ border:{display:false}, grid:{color:'#F1F5F9'}, ticks:{color:'#94A3B8',font:{size:11},callback:v=>yFmt(v)}, afterFit }
+    }
+  };
+}
+
+function lineDatasets(values, st) {
+  const s = buildSeries(values);
+  const fill = st.fill;
+  return [
+    {
+      type:'line', label:'Diário', data:s.actual,
+      borderColor:st.main, borderWidth:2, tension:0.35,
+      pointRadius:3, pointBackgroundColor:st.main, pointHoverRadius:5,
+      fill:true, spanGaps:false,
+      backgroundColor: ctx => {
+        const g = ctx.chart.ctx.createLinearGradient(0,0,0,ctx.chart.height);
+        g.addColorStop(0,fill); g.addColorStop(1,'rgba(0,0,0,0)'); return g;
+      }
+    },
+    { type:'line', label:'Média', data:s.avgLine, borderColor:MUTED, borderWidth:1.5, borderDash:[5,5], pointRadius:0, fill:false, tension:0 }
+  ];
+}
+
+function createLine(id, values, yFmt) {
+  const ctx = document.getElementById(id).getContext('2d');
+  return new Chart(ctx, {
+    type:'line',
+    data:{ labels:xLabels, datasets:lineDatasets(values, style()) },
+    options: baseOpts(yFmt)
+  });
+}
+
+function createMixed(id, valArr, countArr, valLabel, countLabel, valFmt) {
+  const st = style();
+  const sv = buildSeries(valArr);
+  const sc = buildSeries(countArr);
+  const ctx = document.getElementById(id).getContext('2d');
+  return new Chart(ctx, {
+    type:'bar',
+    data:{ labels:xLabels, datasets:[
+      { type:'line', label:valLabel,          data:sv.actual,  yAxisID:'yVal',
+        borderColor:st.main, borderWidth:2, tension:0.35,
+        pointRadius:3, pointBackgroundColor:st.main, fill:false },
+      { type:'line', label:'Média '+valLabel, data:sv.avgLine, yAxisID:'yVal',
+        borderColor:MUTED, borderWidth:1.5, borderDash:[5,5], pointRadius:0, fill:false, tension:0 },
+      { type:'bar',  label:countLabel,         data:sc.actual,  yAxisID:'yCount',
+        backgroundColor:st.bar, borderColor:st.main, borderWidth:1, borderRadius:3 }
+    ]},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      interaction:{ mode:'index', intersect:false },
+      plugins:{
+        legend:{ display:false },
+        tooltip:{
+          backgroundColor:'#1E293B', titleColor:'#94A3B8', bodyColor:'#F8FAFC', padding:10, cornerRadius:8,
+          callbacks:{
+            title: c=>`Dia ${c[0].label}`,
+            label: c=>{
+              if(c.raw===null) return null;
+              return ` ${c.dataset.label}: ${c.datasetIndex<=1 ? valFmt(c.raw) : Math.round(c.raw)}`;
+            }
+          }
+        }
+      },
+      scales:{
+        x:      { border:{display:false}, grid:{color:'#F1F5F9'}, ticks:{color:'#94A3B8',font:{size:11},maxTicksLimit:10} },
+        yVal:   { position:'left',  border:{display:false}, grid:{color:'#F1F5F9'},
+                  ticks:{color:'#94A3B8',font:{size:11},callback:v=>valFmt(v)}, afterFit },
+        yCount: { position:'right', border:{display:false}, grid:{drawOnChartArea:false},
+                  ticks:{color:MUTED,font:{size:11},callback:v=>Math.round(v)} }
+      }
+    }
+  });
+}
+
+// ─────────────────────────────────────────────
+// CHART UPDATE HELPERS
+// ─────────────────────────────────────────────
+function applyAccent(acc) {
+  document.documentElement.style.setProperty('--accent', ACC_STYLE[acc].main);
+}
+
+function refreshLine(chart, values) {
+  if (!chart) return;
+  const s  = buildSeries(values);
+  const st = style();
+  const fill = st.fill;
+  chart.data.datasets[0].data = s.actual;
+  chart.data.datasets[0].borderColor = st.main;
+  chart.data.datasets[0].pointBackgroundColor = st.main;
+  chart.data.datasets[0].backgroundColor = ctx => {
+    const g = ctx.chart.ctx.createLinearGradient(0,0,0,ctx.chart.height);
+    g.addColorStop(0,fill); g.addColorStop(1,'rgba(0,0,0,0)'); return g;
+  };
+  chart.data.datasets[1].data = s.avgLine;
+  chart.update();
+}
+
+function refreshMixed(chart, valArr, countArr) {
+  if (!chart) return;
+  const sv = buildSeries(valArr);
+  const sc = buildSeries(countArr);
+  const st = style();
+  chart.data.datasets[0].data = sv.actual;
+  chart.data.datasets[0].borderColor = st.main;
+  chart.data.datasets[0].pointBackgroundColor = st.main;
+  chart.data.datasets[1].data = sv.avgLine;
+  chart.data.datasets[2].data = sc.actual;
+  chart.data.datasets[2].backgroundColor = st.bar;
+  chart.data.datasets[2].borderColor = st.main;
+  chart.update();
+}
+
+// ─────────────────────────────────────────────
+// COLLAPSE TOGGLE
+// ─────────────────────────────────────────────
+let _open = false;
+function toggleSecondary() {
+  const sec = document.getElementById('secondary-charts');
+  const btn = document.getElementById('btn-toggle-secondary');
+  _open = !_open;
+  if (_open) {
+    sec.classList.remove('collapsed');
+    requestAnimationFrame(() => {
+      charts.br  && charts.br.resize();
+      charts.dev && charts.dev.resize();
+      charts.can && charts.can.resize();
+    });
+    btn.textContent = '▲  Recolher';
+  } else {
+    sec.classList.add('collapsed');
+    btn.textContent = '▼  Expandir Detalhes';
+  }
+}
+
+// ─────────────────────────────────────────────
+// SWITCH ACCOUNT
+// ─────────────────────────────────────────────
+function switchAccount(acc) {
+  currentAcc = acc;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  event.target.classList.add('active');
+  applyAccent(acc);
+  const d = DATA[acc];
+  renderKPIs(acc);
+  updateSubtitles(acc);
+  refreshLine(charts.liq,    d.liq);
+  refreshLine(charts.br,     d.brutas);
+  refreshMixed(charts.dev,   d.devolvidas_val, d.devolvidas_count);
+  refreshMixed(charts.can,   d.canceladas_val, d.canceladas_count);
+  refreshLine(charts.vis,    d.visits);
+  refreshLine(charts.conv,   d.conv);
+  refreshMixed(charts.tkped, d.tk_ped, d.pedidos);
+  refreshMixed(charts.tkun,  d.tk_un,  d.units);
+}
+
+// ─────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────
+function init() {
+  applyAccent(currentAcc);
+  document.querySelectorAll('.month-label').forEach(el=>el.textContent=MONTH_LABEL);
+  const d = DATA[currentAcc];
+  renderKPIs(currentAcc);
+  updateSubtitles(currentAcc);
+
+  const fR  = v=>fmt(v);
+  const fR2 = v=>fmt(v,2);
+
+  charts.liq   = createLine('chart-liq',   d.liq,    fR);
+  charts.br    = createLine('chart-br',    d.brutas, fR);
+  charts.dev   = createMixed('chart-dev',  d.devolvidas_val, d.devolvidas_count
