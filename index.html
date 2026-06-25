@@ -1,9 +1,10 @@
-<!DOCTYPE html><html lang="pt-BR" style="--accent: #0891B2;"><head>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Relatório Gerencial Diário — Grupo Kithom</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   :root {
     --cyan: #1BC8D4;
@@ -68,76 +69,9 @@
   .toggle-row { display: flex; justify-content: center; padding: 4px 0; }
   .btn-toggle { background: transparent; border: 1px solid var(--border); border-radius: 8px; padding: 7px 22px; font-size: 12px; color: var(--muted); cursor: pointer; transition: all 0.15s; }
   .btn-toggle:hover { background: var(--bg); color: var(--text); border-color: var(--accent); }
-
-  /* AUTH OVERLAY */
-  #auth-overlay {
-    position: fixed; inset: 0; z-index: 9999;
-    background: var(--bg);
-    display: flex; align-items: center; justify-content: center;
-  }
-  #auth-overlay.hidden { display: none; }
-  .auth-box {
-    background: var(--card); border-radius: 16px; padding: 40px 36px;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.10); border: 1px solid var(--border);
-    width: 340px; text-align: center;
-  }
-  .auth-box h2 { font-size: 17px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
-  .auth-box p  { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
-  .auth-box input {
-    width: 100%; padding: 11px 14px; border-radius: 8px;
-    border: 1px solid var(--border); font-size: 14px;
-    background: var(--bg); color: var(--text); outline: none;
-    margin-bottom: 12px; transition: border-color 0.2s;
-  }
-  .auth-box input:focus { border-color: var(--accent); }
-  .auth-box button {
-    width: 100%; padding: 11px; border-radius: 8px; border: none;
-    background: var(--accent); color: #fff; font-size: 14px; font-weight: 600;
-    cursor: pointer; transition: opacity 0.2s;
-  }
-  .auth-box button:hover { opacity: 0.88; }
-  .auth-error { font-size: 12px; color: var(--red); margin-top: 8px; min-height: 16px; }
-
-  /* ── MANUAL SECTIONS (Cupons / Afiliados) ── */
-  .section-manual { display: none; }
-  .tab-divider { width: 1px; background: rgba(0,0,0,0.12); margin: 4px 4px; align-self: stretch; }
-  .table-card { background: var(--card); border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid var(--border); border-left: 3px solid var(--accent); margin-top: 16px; overflow-x: auto; }
-  .table-card-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 16px; }
-  .input-table { width: 100%; border-collapse: collapse; min-width: 480px; }
-  .input-table th { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); padding: 10px 14px; text-align: left; border-bottom: 2px solid var(--border); white-space: nowrap; }
-  .input-table td { padding: 6px 14px; border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: middle; }
-  .input-table tbody tr:last-child td { border-bottom: none; }
-  .input-table tbody tr:hover td { background: var(--bg); }
-  .day-num { font-weight: 600; color: var(--muted); width: 48px; }
-  .pct-val { font-weight: 700; color: var(--text); width: 110px; }
-  .num-input { border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; font-size: 13px; color: var(--text); background: var(--bg); width: 150px; outline: none; transition: border-color 0.15s; text-align: right; }
-  .num-input:focus { border-color: var(--accent); background: var(--card); }
-  .drop-zone { border: 2px dashed var(--border); border-radius: 12px; padding: 24px 20px; text-align: center; cursor: default; transition: border-color 0.2s, background 0.2s; background: var(--card); }
-  .drop-zone.drag-over { border-color: var(--accent); background: rgba(27,200,212,0.06); }
-  .drop-zone.loaded { border-color: #059669; background: rgba(5,150,105,0.05); }
-  .drop-zone-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
-  .drop-zone-sub { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
-  .drop-zone-status { font-size: 12px; color: var(--muted); }
-  .drop-zone.loaded .drop-zone-status { color: #059669; font-weight: 600; }
-  .insight-item { padding: 12px 0; border-bottom: 1px solid var(--border); }
-  .insight-item:last-child { border-bottom: none; }
-  .insight-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); margin-bottom: 4px; }
-  .insight-text { font-size: 13px; color: var(--text); line-height: 1.5; }
 </style>
 </head>
 <body>
-
-<!-- AUTH OVERLAY -->
-<div id="auth-overlay">
-  <div class="auth-box">
-    <h2>Relatório Gerencial Kithom</h2>
-    <p>Digite a senha para acessar</p>
-    <input type="password" id="auth-input" placeholder="Senha" onkeydown="if(event.key==='Enter')checkAuth()">
-    <button onclick="checkAuth()">Entrar</button>
-    <div class="auth-error" id="auth-error"></div>
-  </div>
-</div>
-
 <div class="container">
 
   <!-- HEADER -->
@@ -150,26 +84,11 @@
       <button class="tab active" onclick="switchAccount('consolidado')">Consolidado</button>
       <button class="tab" onclick="switchAccount('kdecor')">KDecor</button>
       <button class="tab" onclick="switchAccount('comercial')">Comercial</button>
-      <div class="tab-divider"></div>
-      <button class="tab" onclick="switchAccount('cupons')">Cupons</button>
-      <button class="tab" onclick="switchAccount('afiliados')">Afiliados</button>
     </div>
   </div>
 
   <!-- KPI CARDS -->
-  <div class="kpi-grid" id="kpi-grid"><div class="kpi-card "><div class="kpi-label">Vendas Brutas</div>
-      <div class="kpi-value">R$ 380.906</div>
-      <div class="kpi-sub">Ontem · <span>R$ 18.483</span></div></div><div class="kpi-card kpi-neg"><div class="kpi-label">Canceladas</div>
-      <div class="kpi-value">R$ 16.484</div>
-      <div class="kpi-sub">Ontem · <span>R$ 238</span></div></div><div class="kpi-card kpi-warn"><div class="kpi-label">Devolvidas</div>
-      <div class="kpi-value">R$ 5.494,65</div>
-      <div class="kpi-sub">Ontem · <span>R$ 0,00</span></div></div><div class="kpi-card "><div class="kpi-label">Vendas Líquidas</div>
-      <div class="kpi-value">R$ 336.950</div>
-      <div class="kpi-sub">Ontem · <span>R$ 18.008</span></div></div><div class="kpi-card "><div class="kpi-label">Ticket Médio</div>
-      <div class="kpi-value">R$ 81,12</div>
-      <div class="kpi-sub">Ontem · <span>R$ 79,33</span></div></div><div class="kpi-card "><div class="kpi-label">Conversão</div>
-      <div class="kpi-value">6,37%</div>
-      <div class="kpi-sub">Ontem · <span>5,08%</span></div></div></div>
+  <div class="kpi-grid" id="kpi-grid"></div>
 
   <!-- CHARTS -->
   <div class="charts-stack">
@@ -178,15 +97,15 @@
     <div class="chart-card">
       <div class="chart-header">
         <div>
-          <div class="chart-title">Vendas Líquidas — <span class="month-label">Junho/26</span></div>
-          <div class="chart-subtitle" id="proj-label-liq">MTD: R$ 336.950 · Projeção Junho/26: R$ 439.500</div>
+          <div class="chart-title">Vendas Líquidas — <span class="month-label"></span></div>
+          <div class="chart-subtitle" id="proj-label-liq"></div>
         </div>
         <div class="chart-legend">
           <div class="legend-item"><div class="legend-dot solid"></div>Diário</div>
           <div class="legend-item"><div class="legend-dot dashed"></div>Média</div>
         </div>
       </div>
-      <div class="canvas-wrap tall"><canvas id="chart-liq" width="1177" height="215" style="display: block; box-sizing: border-box; height: 240px; width: 1308px;"></canvas></div>
+      <div class="canvas-wrap tall"><canvas id="chart-liq"></canvas></div>
     </div>
 
     <!-- Toggle -->
@@ -200,23 +119,23 @@
       <div class="chart-card">
         <div class="chart-header">
           <div>
-            <div class="chart-title">Vendas Brutas — <span class="month-label">Junho/26</span></div>
-            <div class="chart-subtitle" id="proj-label-br">MTD: R$ 380.906 · Projeção Junho/26: R$ 496.835</div>
+            <div class="chart-title">Vendas Brutas — <span class="month-label"></span></div>
+            <div class="chart-subtitle" id="proj-label-br"></div>
           </div>
           <div class="chart-legend">
             <div class="legend-item"><div class="legend-dot solid"></div>Diário</div>
             <div class="legend-item"><div class="legend-dot dashed"></div>Média</div>
           </div>
         </div>
-        <div class="canvas-wrap tall"><canvas id="chart-br" height="0" style="display: block; box-sizing: border-box; height: 0px; width: 0px;" width="0"></canvas></div>
+        <div class="canvas-wrap tall"><canvas id="chart-br"></canvas></div>
       </div>
 
       <div class="chart-row">
         <div class="chart-card">
           <div class="chart-header">
             <div>
-              <div class="chart-title">Devoluções — <span class="month-label">Junho/26</span></div>
-              <div class="chart-subtitle" id="sub-dev">79 devoluções · R$ 5.494,65</div>
+              <div class="chart-title">Devoluções — <span class="month-label"></span></div>
+              <div class="chart-subtitle" id="sub-dev"></div>
             </div>
             <div class="chart-legend">
               <div class="legend-item"><div class="legend-dot solid"></div>R$</div>
@@ -224,13 +143,13 @@
               <div class="legend-item"><div class="legend-dot dashed"></div>Média R$</div>
             </div>
           </div>
-          <div class="canvas-wrap"><canvas id="chart-dev" height="0" style="display: block; box-sizing: border-box; height: 0px; width: 0px;" width="0"></canvas></div>
+          <div class="canvas-wrap"><canvas id="chart-dev"></canvas></div>
         </div>
         <div class="chart-card">
           <div class="chart-header">
             <div>
-              <div class="chart-title">Cancelamentos — <span class="month-label">Junho/26</span></div>
-              <div class="chart-subtitle" id="sub-can">212 cancelamentos · R$ 16.484</div>
+              <div class="chart-title">Cancelamentos — <span class="month-label"></span></div>
+              <div class="chart-subtitle" id="sub-can"></div>
             </div>
             <div class="chart-legend">
               <div class="legend-item"><div class="legend-dot solid"></div>R$</div>
@@ -238,7 +157,7 @@
               <div class="legend-item"><div class="legend-dot dashed"></div>Média R$</div>
             </div>
           </div>
-          <div class="canvas-wrap"><canvas id="chart-can" height="0" style="display: block; box-sizing: border-box; height: 0px; width: 0px;" width="0"></canvas></div>
+          <div class="canvas-wrap"><canvas id="chart-can"></canvas></div>
         </div>
       </div>
 
@@ -249,28 +168,28 @@
       <div class="chart-card">
         <div class="chart-header">
           <div>
-            <div class="chart-title">Visitas — <span class="month-label">Junho/26</span></div>
-            <div class="chart-subtitle" id="proj-label-vis">MTD: 72.753 visitas · Projeção Junho/26: 94.895</div>
+            <div class="chart-title">Visitas — <span class="month-label"></span></div>
+            <div class="chart-subtitle" id="proj-label-vis"></div>
           </div>
           <div class="chart-legend">
             <div class="legend-item"><div class="legend-dot solid"></div>Diário</div>
             <div class="legend-item"><div class="legend-dot dashed"></div>Média</div>
           </div>
         </div>
-        <div class="canvas-wrap"><canvas id="chart-vis" width="562" height="179" style="display: block; box-sizing: border-box; height: 200px; width: 624px;"></canvas></div>
+        <div class="canvas-wrap"><canvas id="chart-vis"></canvas></div>
       </div>
       <div class="chart-card">
         <div class="chart-header">
           <div>
-            <div class="chart-title">Conversão — <span class="month-label">Junho/26</span></div>
-            <div class="chart-subtitle" id="proj-label-conv">Média: 6,37%</div>
+            <div class="chart-title">Conversão — <span class="month-label"></span></div>
+            <div class="chart-subtitle" id="proj-label-conv"></div>
           </div>
           <div class="chart-legend">
             <div class="legend-item"><div class="legend-dot solid"></div>Diário</div>
             <div class="legend-item"><div class="legend-dot dashed"></div>Média</div>
           </div>
         </div>
-        <div class="canvas-wrap"><canvas id="chart-conv" width="562" height="179" style="display: block; box-sizing: border-box; height: 200px; width: 624px;"></canvas></div>
+        <div class="canvas-wrap"><canvas id="chart-conv"></canvas></div>
       </div>
     </div>
 
@@ -280,7 +199,7 @@
         <div class="chart-header">
           <div>
             <div class="chart-title">Ticket Médio — Por Pedido</div>
-            <div class="chart-subtitle" id="sub-tkped">4.636 pedidos no período</div>
+            <div class="chart-subtitle" id="sub-tkped"></div>
           </div>
           <div class="chart-legend">
             <div class="legend-item"><div class="legend-dot solid"></div>R$</div>
@@ -288,13 +207,13 @@
             <div class="legend-item"><div class="legend-dot dashed"></div>Média R$</div>
           </div>
         </div>
-        <div class="canvas-wrap"><canvas id="chart-tkped" width="562" height="179" style="display: block; box-sizing: border-box; height: 200px; width: 624px;"></canvas></div>
+        <div class="canvas-wrap"><canvas id="chart-tkped"></canvas></div>
       </div>
       <div class="chart-card">
         <div class="chart-header">
           <div>
             <div class="chart-title">Ticket Médio — Por Unidade</div>
-            <div class="chart-subtitle" id="sub-tkun">5.139 unidades no período</div>
+            <div class="chart-subtitle" id="sub-tkun"></div>
           </div>
           <div class="chart-legend">
             <div class="legend-item"><div class="legend-dot solid"></div>R$</div>
@@ -302,158 +221,18 @@
             <div class="legend-item"><div class="legend-dot dashed"></div>Média R$</div>
           </div>
         </div>
-        <div class="canvas-wrap"><canvas id="chart-tkun" width="562" height="179" style="display: block; box-sizing: border-box; height: 200px; width: 624px;"></canvas></div>
+        <div class="canvas-wrap"><canvas id="chart-tkun"></canvas></div>
       </div>
     </div>
 
   </div><!-- /charts-stack -->
-
-  <!-- ── CUPONS SECTION ── -->
-  <div id="section-cupons" class="section-manual">
-
-    <!-- Sub-tabs -->
-    <div style="display:flex;align-items:center;margin-bottom:22px">
-      <div class="tabs" style="box-shadow:none;background:var(--bg);border:1px solid var(--border)">
-        <button class="tab active ctab" id="ctab-consolidado" onclick="switchCuponTab('consolidado')">Consolidado</button>
-        <button class="tab ctab" id="ctab-kdecor" onclick="switchCuponTab('kdecor')">KDecor</button>
-        <button class="tab ctab" id="ctab-comercial" onclick="switchCuponTab('comercial')">Comercial</button>
-      </div>
-    </div>
-
-    <!-- Hidden file inputs -->
-    <input type="file" id="file-kdecor" accept=".xlsx,.xls" style="display:none" onchange="handleCuponFileInput(event,'kdecor')">
-    <input type="file" id="file-comercial" accept=".xlsx,.xls" style="display:none" onchange="handleCuponFileInput(event,'comercial')">
-
-    <!-- Drop zones -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
-      <div class="drop-zone" id="drop-kdecor" ondrop="handleCuponDrop(event,'kdecor')" ondragover="handleCuponDragOver(event,'kdecor')" ondragleave="handleCuponDragLeave('kdecor')">
-        <div class="drop-zone-title">KDecor — C02</div>
-        <div class="drop-zone-sub">Arraste o arquivo Excel aqui ou</div>
-        <button class="btn-toggle" style="margin:6px auto 4px" onclick="document.getElementById('file-kdecor').click()">Selecionar arquivo</button>
-        <div class="drop-zone-status" id="drop-kdecor-status">Sem arquivo carregado</div>
-      </div>
-      <div class="drop-zone" id="drop-comercial" ondrop="handleCuponDrop(event,'comercial')" ondragover="handleCuponDragOver(event,'comercial')" ondragleave="handleCuponDragLeave('comercial')">
-        <div class="drop-zone-title">Comercial — C01</div>
-        <div class="drop-zone-sub">Arraste o arquivo Excel aqui ou</div>
-        <button class="btn-toggle" style="margin:6px auto 4px" onclick="document.getElementById('file-comercial').click()">Selecionar arquivo</button>
-        <div class="drop-zone-status" id="drop-comercial-status">Sem arquivo carregado</div>
-      </div>
-    </div>
-
-    <!-- Save button -->
-    <div style="display:flex;align-items:center;justify-content:flex-end;gap:12px;margin-bottom:22px">
-      <span id="cupons-save-status" style="font-size:12px;color:#059669"></span>
-      <button class="btn-toggle" onclick="salvarRelatorio()">Salvar</button>
-    </div>
-
-    <!-- KPIs -->
-    <div class="kpi-grid" id="kpi-cupons-view" style="grid-template-columns:repeat(4,1fr);margin-bottom:22px"></div>
-
-    <!-- Bar chart -->
-    <div class="chart-card" style="margin-bottom:16px">
-      <div class="chart-header">
-        <div>
-          <div class="chart-title">Vendas e Orçamento por Cupom</div>
-          <div class="chart-subtitle">Ordenado por vendas brutas</div>
-        </div>
-        <div class="chart-legend">
-          <div class="legend-item"><div class="legend-dot bar" style="background:rgba(27,200,212,0.55)"></div>Vendas</div>
-          <div class="legend-item"><div class="legend-dot bar" style="background:rgba(220,38,38,0.35)"></div>Orçamento</div>
-        </div>
-      </div>
-      <div id="cupons-bar-wrap" style="position:relative;height:240px"><canvas id="chart-cupons-bar"></canvas></div>
-    </div>
-
-    <!-- Toggle scatter -->
-    <div class="toggle-row">
-      <button id="btn-cupons-secondary" class="btn-toggle" onclick="toggleCuponsSecondary()">▼&nbsp; Eficiência — Orçamento × Vendas</button>
-    </div>
-
-    <!-- Scatter (collapsible) -->
-    <div id="cupons-secondary" style="display:none;margin-top:16px">
-      <div class="chart-card">
-        <div class="chart-header">
-          <div>
-            <div class="chart-title">Eficiência — Orçamento × Vendas</div>
-            <div class="chart-subtitle">Canto superior esquerdo = maior retorno por real investido</div>
-          </div>
-        </div>
-        <div class="canvas-wrap tall"><canvas id="chart-cupons-scatter"></canvas></div>
-      </div>
-    </div>
-
-    <!-- Table -->
-    <div class="table-card" style="margin-top:16px">
-      <div class="table-card-title">Detalhamento por Cupom</div>
-      <table class="input-table" id="table-cupons-detail">
-        <thead><tr id="thead-cupons-detail"></tr></thead>
-        <tbody id="tbody-cupons-detail"></tbody>
-      </table>
-    </div>
-
-    <!-- Insights -->
-    <div class="table-card" style="margin-top:16px">
-      <div class="table-card-title">Insights</div>
-      <div id="cupons-insights-content"><div style="font-size:13px;color:var(--muted)">Carregue os arquivos para ver os insights.</div></div>
-    </div>
-
-  </div>
-
-  <!-- ── AFILIADOS SECTION ── -->
-  <div id="section-afiliados" class="section-manual">
-    <div class="kpi-grid" id="kpi-manual-afiliados" style="grid-template-columns:repeat(4,1fr);margin-bottom:22px"></div>
-    <div class="chart-card" style="margin-bottom:16px">
-      <div class="chart-header">
-        <div>
-          <div class="chart-title">% Comissão de Afiliados — Diário</div>
-          <div class="chart-subtitle" id="sub-chart-afiliados"></div>
-        </div>
-      </div>
-      <div class="canvas-wrap tall"><canvas id="chart-afiliados-pct"></canvas></div>
-    </div>
-    <div class="table-card">
-      <div class="table-card-title">Dados Diários — Afiliados</div>
-      <table class="input-table">
-        <thead>
-          <tr>
-            <th>Dia</th>
-            <th>Comissão Paga (R$)</th>
-            <th>Vendas Brutas c/ Afiliados (R$)</th>
-            <th>% Comissão</th>
-          </tr>
-        </thead>
-        <tbody id="tbody-afiliados"></tbody>
-      </table>
-    </div>
-  </div>
-
 </div><!-- /container -->
 
 <script>
 // ─────────────────────────────────────────────
-// AUTH
-// ─────────────────────────────────────────────
-const SENHA = 'Kithom2831';
-function checkAuth() {
-  const val = document.getElementById('auth-input').value;
-  if (val === SENHA) {
-    sessionStorage.setItem('kithom_auth', '1');
-    document.getElementById('auth-overlay').classList.add('hidden');
-    document.getElementById('auth-input').value = '';
-  } else {
-    document.getElementById('auth-error').textContent = 'Senha incorreta.';
-    document.getElementById('auth-input').value = '';
-    document.getElementById('auth-input').focus();
-  }
-}
-if (sessionStorage.getItem('kithom_auth') === '1') {
-  document.getElementById('auth-overlay').classList.add('hidden');
-}
-
-// ─────────────────────────────────────────────
 // DATA (injected by gerar_relatorio.py)
 // ─────────────────────────────────────────────
-const DATA = {"consolidado": {"brutas": [26137.2, 22631.24, 19784.37, 25421.48, 18138.56, 23437.51, 23701.93, 20568.67, 24319.87, 19383.3, 18233.03, 17298.54, 12185.28, 17511.59, 11393.95, 7814.58, 9051.63, 8074.35, 6604.69, 7738.82, 7945.88, 15167.52, 18482.94, 15303.43], "canceladas_val": [1135.3, 1372.46, 901.97, 1585.35, 924.26, 768.1, 1114.52, 1163.17, 1145.91, 1142.68, 815.74, 342.98, 732.34, 423.98, 354.96, 500.6, 932.95, 331.47, 226.12, 299.07, 253.31, 260.58, 389.17, 234.68], "devolvidas_val": [668.23, 566.95, 400.36, 352.14, 62, 629.81, 178.4, 525.64, 244.89, 233.58, 591.19, 134.86, 238.43, 311.77, 254.55, 114.28, 87.46, 36.52, 0, 0, 0, 0, 0, 0], "liq": [22530.14, 18752.42, 17179.71, 21546.5, 16166.04, 20641.69, 21116.09, 17191.05, 21538.27, 16630.78, 15419.17, 16342.86, 10243.74, 16040.09, 10174.93, 6584.82, 7010.81, 7338.37, 6152.45, 7140.68, 7439.26, 14646.36, 17704.6, 14834.07], "pedidos": [306, 277, 243, 302, 242, 282, 276, 239, 293, 219, 215, 213, 128, 189, 135, 107, 109, 112, 93, 110, 111, 194, 231, 197], "units": [347, 295, 259, 326, 257, 304, 306, 257, 332, 258, 247, 235, 148, 217, 158, 119, 124, 122, 102, 122, 121, 216, 257, 217], "visits": [3927, 4145, 3688, 4058, 3595, 3781, 4008, 3479, 3619, 3424, 3421, 3273, 3432, 4411, 2261, 1330, 1362, 1353, 1761, 1375, 1861, 4603, 4643, 3449], "conv": [7.79, 6.68, 6.59, 7.44, 6.73, 7.46, 6.89, 6.87, 8.1, 6.4, 6.28, 6.51, 3.73, 4.28, 5.97, 8.05, 8.0, 8.28, 5.28, 8.0, 5.96, 4.21, 4.98, 5.71], "tk_ped": [85.42, 81.7, 81.42, 84.18, 74.95, 83.11, 85.88, 86.06, 83.0, 88.51, 84.8, 81.21, 95.2, 92.65, 84.4, 73.03, 83.04, 72.09, 71.02, 70.35, 71.58, 78.18, 80.01, 77.68], "tk_un": [75.32, 76.72, 76.39, 77.98, 70.58, 77.1, 77.46, 80.03, 73.25, 75.13, 73.82, 73.61, 82.33, 80.7, 72.11, 65.67, 73.0, 66.18, 64.75, 63.43, 65.67, 70.22, 71.92, 70.52], "canceladas_count": [14, 16, 13, 19, 14, 11, 19, 15, 14, 13, 12, 4, 8, 4, 5, 7, 8, 4, 4, 4, 4, 4, 5, 4], "devolvidas_count": [9, 9, 7, 5, 2, 6, 4, 6, 4, 3, 6, 4, 3, 4, 3, 3, 2, 1, 0, 0, 0, 0, 0, 0], "name": "Consolidado"}, "kdecor": {"brutas": [12724.81, 9182.4, 9043.72, 11293.03, 6539.8, 8918.53, 8285.08, 7054.97, 8960.5, 7681.53, 5831.51, 2297.72, 2759.74, 3486.78, 3277.24, 4061.64, 4735.87, 4973.99, 4539.29, 3942.45, 5751.52, 6160.32, 5547.1, 4635.27], "canceladas_val": [532.02, 155.98, 155.98, 526.26, 142.83, 367.71, 370.75, 129.66, 478.34, 453.18, 240.57, 174.82, 121.59, 59.83, 59.83, 220.45, 472.26, 331.47, 192.0, 299.07, 219.36, 71.74, 199.73, 0], "devolvidas_val": [286.32, 209.07, 216.88, 221.04, 0, 214.77, 61.59, 327.96, 192.89, 181.58, 193.28, 0, 105.59, 223.18, 123.19, 64.01, 73.18, 0, 0, 0, 0, 0, 0, 0], "liq": [11088.13, 8452.3, 8298.0, 9798.43, 6254.14, 7753.57, 7420.4, 6139.73, 7618.04, 6412.01, 4963.81, 1948.08, 2305.38, 2920.76, 2911.2, 3492.72, 3644.99, 4311.05, 4155.29, 3344.31, 5312.8, 6016.84, 5147.64, 4635.27], "pedidos": [163, 118, 116, 142, 85, 115, 102, 85, 113, 89, 75, 24, 27, 32, 29, 47, 51, 59, 59, 51, 72, 78, 72, 62], "units": [163, 118, 116, 142, 86, 115, 104, 85, 113, 94, 75, 24, 28, 32, 31, 49, 53, 60, 61, 53, 77, 84, 74, 64], "visits": [1293, 1357, 1166, 1511, 1043, 1062, 1272, 960, 976, 872, 859, 618, 680, 639, 747, 599, 632, 685, 1048, 796, 1133, 1153, 1364, 871], "conv": [12.61, 8.7, 9.95, 9.4, 8.15, 10.83, 8.02, 8.85, 11.58, 10.21, 8.73, 3.88, 3.97, 5.01, 3.88, 7.85, 8.07, 8.61, 5.63, 6.41, 6.35, 6.76, 5.28, 7.12], "tk_ped": [73.05, 74.72, 74.75, 74.27, 75.26, 72.49, 76.99, 77.62, 73.36, 79.18, 71.97, 88.45, 93.8, 100.12, 106.7, 80.37, 82.17, 78.69, 73.68, 71.44, 76.84, 78.06, 74.27, 74.76], "tk_un": [73.05, 74.72, 74.75, 74.27, 74.38, 72.49, 75.51, 77.62, 73.36, 74.97, 71.97, 88.45, 90.45, 100.12, 99.81, 77.09, 79.06, 77.38, 71.27, 68.74, 71.85, 72.48, 72.26, 72.43], "canceladas_count": [7, 2, 2, 6, 2, 5, 5, 2, 6, 6, 3, 2, 1, 1, 1, 3, 6, 4, 3, 4, 3, 1, 3, 0], "devolvidas_count": [4, 4, 3, 3, 0, 3, 1, 4, 3, 2, 2, 0, 1, 2, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0], "name": "KDecor"}, "comercial": {"brutas": [13412.39, 13448.84, 10740.65, 14128.45, 11598.76, 14518.98, 15416.85, 13513.7, 15359.37, 11701.77, 12401.52, 15000.82, 9425.54, 14024.81, 8116.71, 3752.94, 4315.76, 3100.36, 2065.4, 3796.37, 2194.36, 9007.2, 12935.84, 10668.16], "canceladas_val": [603.28, 1216.48, 745.99, 1059.09, 781.43, 400.39, 743.77, 1033.51, 667.57, 689.5, 575.17, 168.16, 610.75, 364.15, 295.13, 280.15, 460.69, 0, 34.12, 0, 33.95, 188.84, 189.44, 234.68], "devolvidas_val": [381.91, 357.88, 183.48, 131.1, 62, 415.04, 116.81, 197.68, 52, 52, 397.91, 134.86, 132.84, 88.59, 131.36, 50.27, 14.28, 36.52, 0, 0, 0, 0, 0, 0], "liq": [11442.01, 10300.12, 8881.71, 11748.07, 9911.9, 12888.12, 13695.69, 11051.32, 13920.23, 10218.77, 10455.36, 14394.78, 7938.36, 13119.33, 7263.73, 3092.1, 3365.82, 3027.32, 1997.16, 3796.37, 2126.46, 8629.52, 12556.96, 10198.8], "pedidos": [143, 159, 127, 160, 157, 167, 174, 154, 180, 130, 140, 189, 101, 157, 106, 60, 58, 53, 34, 59, 39, 116, 159, 135], "units": [184, 177, 143, 184, 171, 189, 202, 172, 219, 164, 172, 211, 120, 185, 127, 70, 71, 62, 41, 69, 44, 132, 183, 153], "visits": [2634, 2788, 2522, 2547, 2552, 2719, 2736, 2519, 2643, 2552, 2562, 2655, 2752, 3772, 1514, 731, 730, 668, 713, 579, 728, 3450, 3279, 2578], "conv": [5.43, 5.7, 5.04, 6.28, 6.15, 6.14, 6.36, 6.11, 6.81, 5.09, 5.46, 7.12, 3.67, 4.16, 7.0, 8.21, 7.95, 7.93, 4.77, 10.19, 5.36, 3.36, 4.85, 5.24], "tk_ped": [86.9, 74.68, 77.25, 80.86, 68.51, 82.06, 83.66, 79.76, 81.33, 84.31, 81.63, 77.77, 85.96, 86.45, 72.55, 57.04, 66.22, 57.81, 59.74, 64.35, 55.4, 76.02, 80.17, 77.29], "tk_un": [67.54, 67.09, 68.61, 70.32, 62.9, 72.51, 72.06, 71.41, 66.85, 66.83, 66.44, 69.66, 72.35, 73.36, 60.55, 48.89, 54.1, 49.42, 49.54, 55.02, 49.1, 66.81, 69.65, 68.19], "canceladas_count": [7, 14, 11, 13, 12, 6, 14, 13, 8, 7, 9, 2, 7, 3, 4, 4, 2, 0, 1, 0, 1, 3, 2, 4], "devolvidas_count": [5, 5, 4, 2, 2, 3, 3, 2, 1, 1, 4, 4, 2, 2, 2, 2, 1, 1, 0, 0, 0, 0, 0, 0], "name": "Comercial"}};
+const DATA = {"consolidado": {"brutas": [26137.2, 22631.24, 19784.37, 25421.48, 18138.56, 23437.51, 23701.93, 20568.67, 24319.87, 19383.3, 18278.69, 17298.54, 12185.28, 17511.59, 11393.95, 7814.58, 9051.63, 8074.35, 6604.69, 7738.82, 7945.88, 15167.52, 18482.94, 15445.34], "canceladas_val": [1135.3, 1372.46, 901.97, 1585.35, 924.26, 768.1, 1114.52, 1163.17, 1145.91, 1142.68, 815.74, 342.98, 831.17, 423.98, 354.96, 500.6, 932.95, 331.47, 226.12, 299.07, 253.31, 315.15, 389.17, 234.68], "devolvidas_val": [668.23, 566.95, 400.36, 352.14, 62, 629.81, 178.4, 525.64, 244.89, 233.58, 591.19, 134.86, 238.43, 562.49, 254.55, 114.28, 87.46, 36.52, 0, 0, 0, 0, 0, 0], "liq": [22530.14, 18752.42, 17179.71, 21546.5, 16166.04, 20641.69, 21116.09, 17191.05, 21538.27, 16630.78, 15464.83, 16342.86, 10046.08, 15538.65, 10174.93, 6584.82, 7010.81, 7338.37, 6152.45, 7140.68, 7439.26, 14537.22, 17704.6, 14975.98], "pedidos": [306, 277, 243, 302, 242, 282, 276, 239, 293, 219, 215, 213, 127, 188, 135, 107, 109, 112, 93, 110, 111, 193, 231, 199], "units": [347, 295, 259, 326, 257, 304, 306, 257, 332, 258, 247, 235, 147, 215, 158, 119, 124, 122, 102, 122, 121, 215, 257, 219], "visits": [3927, 4145, 3688, 4058, 3595, 3781, 4008, 3479, 3619, 3424, 3421, 3273, 3432, 4411, 2261, 1330, 1362, 1353, 1761, 1375, 1861, 4603, 4644, 3896], "conv": [7.79, 6.68, 6.59, 7.44, 6.73, 7.46, 6.89, 6.87, 8.1, 6.4, 6.28, 6.51, 3.7, 4.26, 5.97, 8.05, 8.0, 8.28, 5.28, 8.0, 5.96, 4.19, 4.97, 5.11], "tk_ped": [85.42, 81.7, 81.42, 84.18, 74.95, 83.11, 85.88, 86.06, 83.0, 88.51, 85.02, 81.21, 95.95, 93.15, 84.4, 73.03, 83.04, 72.09, 71.02, 70.35, 71.58, 78.59, 80.01, 77.61], "tk_un": [75.32, 76.72, 76.39, 77.98, 70.58, 77.1, 77.46, 80.03, 73.25, 75.13, 74.0, 73.61, 82.89, 81.45, 72.11, 65.67, 73.0, 66.18, 64.75, 63.43, 65.67, 70.55, 71.92, 70.53], "canceladas_count": [14, 16, 13, 19, 14, 11, 19, 15, 14, 13, 12, 4, 9, 4, 5, 7, 8, 4, 4, 4, 4, 5, 5, 4], "devolvidas_count": [9, 9, 7, 5, 2, 6, 4, 6, 4, 3, 6, 4, 3, 5, 3, 3, 2, 1, 0, 0, 0, 0, 0, 0], "name": "Consolidado"}, "kdecor": {"brutas": [12724.81, 9182.4, 9043.72, 11293.03, 6539.8, 8918.53, 8285.08, 7054.97, 8960.5, 7681.53, 5831.51, 2297.72, 2759.74, 3486.78, 3277.24, 4061.64, 4735.87, 4973.99, 4539.29, 3942.45, 5751.52, 6160.32, 5547.1, 4686.18], "canceladas_val": [532.02, 155.98, 155.98, 526.26, 142.83, 367.71, 370.75, 129.66, 478.34, 453.18, 240.57, 174.82, 121.59, 59.83, 59.83, 220.45, 472.26, 331.47, 192.0, 299.07, 219.36, 71.74, 199.73, 0], "devolvidas_val": [286.32, 209.07, 216.88, 221.04, 0, 214.77, 61.59, 327.96, 192.89, 181.58, 193.28, 0, 105.59, 223.18, 123.19, 64.01, 73.18, 0, 0, 0, 0, 0, 0, 0], "liq": [11088.13, 8452.3, 8298.0, 9798.43, 6254.14, 7753.57, 7420.4, 6139.73, 7618.04, 6412.01, 4963.81, 1948.08, 2305.38, 2920.76, 2911.2, 3492.72, 3644.99, 4311.05, 4155.29, 3344.31, 5312.8, 6016.84, 5147.64, 4686.18], "pedidos": [163, 118, 116, 142, 85, 115, 102, 85, 113, 89, 75, 24, 27, 32, 29, 47, 51, 59, 59, 51, 72, 78, 72, 63], "units": [163, 118, 116, 142, 86, 115, 104, 85, 113, 94, 75, 24, 28, 32, 31, 49, 53, 60, 61, 53, 77, 84, 74, 65], "visits": [1293, 1357, 1166, 1511, 1043, 1062, 1272, 960, 976, 872, 859, 618, 680, 639, 747, 599, 632, 685, 1048, 796, 1133, 1153, 1365, 970], "conv": [12.61, 8.7, 9.95, 9.4, 8.15, 10.83, 8.02, 8.85, 11.58, 10.21, 8.73, 3.88, 3.97, 5.01, 3.88, 7.85, 8.07, 8.61, 5.63, 6.41, 6.35, 6.76, 5.27, 6.49], "tk_ped": [73.05, 74.72, 74.75, 74.27, 75.26, 72.49, 76.99, 77.62, 73.36, 79.18, 71.97, 88.45, 93.8, 100.12, 106.7, 80.37, 82.17, 78.69, 73.68, 71.44, 76.84, 78.06, 74.27, 74.38], "tk_un": [73.05, 74.72, 74.75, 74.27, 74.38, 72.49, 75.51, 77.62, 73.36, 74.97, 71.97, 88.45, 90.45, 100.12, 99.81, 77.09, 79.06, 77.38, 71.27, 68.74, 71.85, 72.48, 72.26, 72.1], "canceladas_count": [7, 2, 2, 6, 2, 5, 5, 2, 6, 6, 3, 2, 1, 1, 1, 3, 6, 4, 3, 4, 3, 1, 3, 0], "devolvidas_count": [4, 4, 3, 3, 0, 3, 1, 4, 3, 2, 2, 0, 1, 2, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0], "name": "KDecor"}, "comercial": {"brutas": [13412.39, 13448.84, 10740.65, 14128.45, 11598.76, 14518.98, 15416.85, 13513.7, 15359.37, 11701.77, 12447.18, 15000.82, 9425.54, 14024.81, 8116.71, 3752.94, 4315.76, 3100.36, 2065.4, 3796.37, 2194.36, 9007.2, 12935.84, 10759.16], "canceladas_val": [603.28, 1216.48, 745.99, 1059.09, 781.43, 400.39, 743.77, 1033.51, 667.57, 689.5, 575.17, 168.16, 709.58, 364.15, 295.13, 280.15, 460.69, 0, 34.12, 0, 33.95, 243.41, 189.44, 234.68], "devolvidas_val": [381.91, 357.88, 183.48, 131.1, 62, 415.04, 116.81, 197.68, 52, 52, 397.91, 134.86, 132.84, 339.31, 131.36, 50.27, 14.28, 36.52, 0, 0, 0, 0, 0, 0], "liq": [11442.01, 10300.12, 8881.71, 11748.07, 9911.9, 12888.12, 13695.69, 11051.32, 13920.23, 10218.77, 10501.02, 14394.78, 7740.7, 12617.89, 7263.73, 3092.1, 3365.82, 3027.32, 1997.16, 3796.37, 2126.46, 8520.38, 12556.96, 10289.8], "pedidos": [143, 159, 127, 160, 157, 167, 174, 154, 180, 130, 140, 189, 100, 156, 106, 60, 58, 53, 34, 59, 39, 115, 159, 136], "units": [184, 177, 143, 184, 171, 189, 202, 172, 219, 164, 172, 211, 119, 183, 127, 70, 71, 62, 41, 69, 44, 131, 183, 154], "visits": [2634, 2788, 2522, 2547, 2552, 2719, 2736, 2519, 2643, 2552, 2562, 2655, 2752, 3772, 1514, 731, 730, 668, 713, 579, 728, 3450, 3279, 2926], "conv": [5.43, 5.7, 5.04, 6.28, 6.15, 6.14, 6.36, 6.11, 6.81, 5.09, 5.46, 7.12, 3.63, 4.14, 7.0, 8.21, 7.95, 7.93, 4.77, 10.19, 5.36, 3.33, 4.85, 4.65], "tk_ped": [86.9, 74.68, 77.25, 80.86, 68.51, 82.06, 83.66, 79.76, 81.33, 84.31, 81.96, 77.77, 85.83, 85.39, 72.55, 57.04, 66.22, 57.81, 59.74, 64.35, 55.4, 76.21, 80.17, 77.39], "tk_un": [67.54, 67.09, 68.61, 70.32, 62.9, 72.51, 72.06, 71.41, 66.85, 66.83, 66.71, 69.66, 72.13, 72.79, 60.55, 48.89, 54.1, 49.42, 49.54, 55.02, 49.1, 66.9, 69.65, 68.34], "canceladas_count": [7, 14, 11, 13, 12, 6, 14, 13, 8, 7, 9, 2, 8, 3, 4, 4, 2, 0, 1, 0, 1, 4, 2, 4], "devolvidas_count": [5, 5, 4, 2, 2, 3, 3, 2, 1, 1, 4, 4, 2, 3, 2, 2, 1, 1, 0, 0, 0, 0, 0, 0], "name": "Comercial"}};
 
 // ─────────────────────────────────────────────
 // ACCOUNT STYLES
@@ -734,14 +513,6 @@ function switchAccount(acc) {
   currentAcc = acc;
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   event.target.classList.add('active');
-
-  if (acc === 'cupons' || acc === 'afiliados') {
-    showSalesContent(false);
-    showManualSection(acc);
-    return;
-  }
-
-  showSalesContent(true);
   applyAccent(acc);
   const d = DATA[acc];
   renderKPIs(acc);
@@ -780,668 +551,6 @@ function init() {
 }
 
 document.addEventListener('DOMContentLoaded', init);
-
-// ─────────────────────────────────────────────
-// CUPONS SECTION — Excel drag-and-drop
-// ─────────────────────────────────────────────
-let cuponsData = { kdecor: [], comercial: [] };
-let currentCuponTab = 'consolidado';
-let cuponCharts = {};
-let cuponsSecondaryOpen = false;
-
-function cuponStorageKey() { return `kithom_cupons_${M_YEAR}_${M_MONTH}`; }
-
-function loadCuponsFromStorage() {
-  // 1. Tenta localStorage (prioridade — dados mais recentes)
-  try {
-    const saved = localStorage.getItem(cuponStorageKey());
-    if (saved) { cuponsData = JSON.parse(saved); return; }
-  } catch {}
-  // 2. Fallback: dados injetados pelo script Python (visíveis para todos os sócios)
-  if (window.CUPONS_DATA) {
-    try { cuponsData = JSON.parse(window.CUPONS_DATA); } catch {}
-  }
-}
-
-function saveCuponsToStorage() {
-  localStorage.setItem(cuponStorageKey(), JSON.stringify(cuponsData));
-}
-
-function parseBRL(v) {
-  if (v === null || v === undefined || v === '') return 0;
-  if (typeof v === 'number') return v;
-  return parseFloat(String(v).replace(/R\$\s*/g, '').replace(/\./g, '').replace(',', '.')) || 0;
-}
-
-function parseIntBR(v) {
-  if (typeof v === 'number') return Math.round(v);
-  // "4.717" em PT-BR = 4717 — remover ponto de milhar antes do parseInt
-  return parseInt(String(v).replace(/\./g, '').replace(',', '')) || 0;
-}
-
-function mFmtRCompact(v) {
-  if (v >= 1000) return 'R$ ' + (v / 1000).toFixed(1).replace('.', ',') + 'k';
-  return 'R$ ' + v.toFixed(0);
-}
-
-function handleCuponFileInput(e, acc) {
-  const file = e.target.files[0];
-  if (!file) return;
-  parseExcelCupons(file, acc);
-  e.target.value = ''; // reset para permitir re-seleção do mesmo arquivo
-}
-
-// ─── IndexedDB helpers (armazena handle do arquivo entre sessões) ───
-const _IDB = { name: 'kithom-handles', store: 'handles' };
-function _idbOpen() {
-  return new Promise((res, rej) => {
-    const r = indexedDB.open(_IDB.name, 1);
-    r.onupgradeneeded = e => e.target.result.createObjectStore(_IDB.store);
-    r.onsuccess  = e => res(e.target.result);
-    r.onerror    = e => rej(e.target.error);
-  });
-}
-async function _idbGet(key) {
-  const db = await _idbOpen();
-  return new Promise(res => {
-    const r = db.transaction(_IDB.store,'readonly').objectStore(_IDB.store).get(key);
-    r.onsuccess = () => res(r.result || null);
-    r.onerror   = () => res(null);
-  });
-}
-async function _idbSet(key, val) {
-  const db = await _idbOpen();
-  return new Promise(res => {
-    const tx = db.transaction(_IDB.store,'readwrite');
-    tx.objectStore(_IDB.store).put(val, key);
-    tx.oncomplete = res;
-  });
-}
-
-// HTML fonte — carregado uma vez ao abrir a página
-let _srcHTML = null;
-window.addEventListener('DOMContentLoaded', async () => {
-  try {
-    const r = await fetch(window.location.href);
-    if (r.ok) _srcHTML = await r.text();
-  } catch {}
-  if (!_srcHTML) _srcHTML = '<!DOCTYPE html>' + document.documentElement.outerHTML;
-});
-
-async function salvarRelatorio() {
-  const statusEl = document.getElementById('cupons-save-status');
-  if (!window.showSaveFilePicker) {
-    statusEl.textContent = 'Use Chrome ou Edge para salvar.';
-    statusEl.style.color = '#DC2626';
-    return;
-  }
-  statusEl.textContent = 'Salvando...';
-  statusEl.style.color = 'var(--muted)';
-  try {
-    let handle = await _idbGet('relatorio-handle');
-    if (handle) {
-      const perm = await handle.queryPermission({ mode: 'readwrite' });
-      if (perm !== 'granted') {
-        const req = await handle.requestPermission({ mode: 'readwrite' });
-        if (req !== 'granted') handle = null;
-      }
-    }
-    if (!handle) {
-      handle = await window.showSaveFilePicker({
-        suggestedName: 'relatorio_diario.html',
-        types: [{ description: 'Relatório HTML', accept: { 'text/html': ['.html'] } }]
-      });
-      await _idbSet('relatorio-handle', handle);
-    }
-
-    // Injetar CUPONS_DATA no HTML fonte e gravar o arquivo
-    const tag     = 'const CUPONS_DATA = "{"1":{"gasto":"","vendas":""},"kdecor":[{"nome":"SEG 15% MÁX R$ 10 JUN26","vigencia":"De 1 a 30 de Junho","audiencia":"Seguidores de Minha página","aplicados":109,"usados":34,"unidades":52,"vendas":4039.9,"orcamento":303},{"nome":"SABOR 40% MÁX R$2 JUN26","vigencia":"De 1 a 30 de Junho","audiencia":"Todos os compradores do Mercado Livre","aplicados":3278,"usados":481,"unidades":604,"vendas":45460.3,"orcamento":891.4},{"nome":"Cupom para carrinhos abandonados","vigencia":"De 1 a 30 de Junho","audiencia":"Todos os compradores de KDECOR BRASIL","aplicados":12865,"usados":56,"unidades":63,"vendas":4843.2,"orcamento":100.6},{"nome":"NEW","vigencia":"De 9 a 30 de Junho","audiencia":"Novos seguidores da “Minha página”","aplicados":189,"usados":9,"unidades":15,"vendas":1116.1,"orcamento":68.7},{"nome":"SABOR 40% MÁX R$ 2 MAIO26","vigencia":"De 21 a 31 de Maio","audiencia":"Todos os compradores do Mercado Livre","aplicados":0,"usados":1,"unidades":1,"vendas":55.8,"orcamento":2}],"comercial":[{"nome":"SABOR 40% MÁX R$2 JUN26","vigencia":"De 1 a 30 de Junho","audiencia":"Todos os compradores do Mercado Livre","aplicados":4717,"usados":688,"unidades":951,"vendas":63373.1,"orcamento":1290.6},{"nome":"SEG 15% MÁX R$10 JUN26","vigencia":"De 1 a 30 de Junho","audiencia":"Seguidores de Minha página","aplicados":137,"usados":40,"unidades":78,"vendas":5403.1,"orcamento":332},{"nome":"Cupom para carrinhos abandonados","vigencia":"De 1 a 30 de Junho","audiencia":"Todos os compradores de Kithom","aplicados":14713,"usados":154,"unidades":241,"vendas":16691.6,"orcamento":285.6},{"nome":"NEW 10% MÁX 10 JUN26","vigencia":"De 9 a 30 de Junho","audiencia":"Novos seguidores da “Minha página”","aplicados":192,"usados":13,"unidades":48,"vendas":4600.1,"orcamento":112.6}]}";';
-    const src     = _srcHTML || ('<!DOCTYPE html>' + document.documentElement.outerHTML);
-    const newHTML = /const CUPONS_DATA\s*=/.test(src)
-      ? src.replace(/const CUPONS_DATA\s*=\s*[^;]+;/, tag)
-      : src.replace('const DATA =', tag + '\nconst DATA =');
-
-    const wr = await handle.createWritable();
-    await wr.write(new Blob([newHTML], { type: 'text/html;charset=utf-8' }));
-    await wr.close();
-    _srcHTML = newHTML;
-
-    statusEl.textContent = 'Salvo ✓';
-    statusEl.style.color = '#059669';
-    setTimeout(() => { statusEl.textContent = ''; statusEl.style.color = ''; }, 3000);
-  } catch (e) {
-    if (e.name === 'AbortError') { statusEl.textContent = ''; return; }
-    statusEl.textContent = 'Erro: ' + e.message;
-    statusEl.style.color = '#DC2626';
-  }
-}
-
-function handleCuponDragOver(e, acc) {
-  e.preventDefault();
-  document.getElementById('drop-' + acc).classList.add('drag-over');
-}
-
-function handleCuponDragLeave(acc) {
-  document.getElementById('drop-' + acc).classList.remove('drag-over');
-}
-
-function handleCuponDrop(e, acc) {
-  e.preventDefault();
-  document.getElementById('drop-' + acc).classList.remove('drag-over');
-  const file = e.dataTransfer.files[0];
-  if (!file) return;
-  if (!file.name.match(/\.(xlsx|xls)$/i)) { alert('Use um arquivo Excel (.xlsx ou .xls)'); return; }
-  parseExcelCupons(file, acc);
-}
-
-function parseExcelCupons(file, acc) {
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      const wb   = XLSX.read(e.target.result, { type: 'array' });
-      const ws   = wb.Sheets[wb.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
-
-      // Localizar linha de cabeçalho
-      let hIdx = -1;
-      for (let i = 0; i < rows.length; i++) {
-        if (rows[i].some(c => String(c).toLowerCase().includes('nome do cupom'))) { hIdx = i; break; }
-      }
-      if (hIdx === -1) { alert('Formato não reconhecido. Verifique se o arquivo é o relatório de cupons do ML.'); return; }
-
-      const headers = rows[hIdx].map(h => String(h).trim().toLowerCase());
-      const col = k => headers.findIndex(h => h.includes(k));
-      const idx = {
-        nome:      col('nome do cupom'),
-        vigencia:  col('vigência') !== -1 ? col('vigência') : col('vigencia'),
-        audiencia: col('audiência') !== -1 ? col('audiência') : col('audiencia'),
-        aplicados: col('aplicados'),
-        usados:    col('usados'),
-        unidades:  col('unidades'),
-        vendas:    col('vendas brutas'),
-        orcamento: col('orçamento') !== -1 ? col('orçamento') : col('orcamento'),
-      };
-
-      const parsed = [];
-      for (let i = hIdx + 1; i < rows.length; i++) {
-        const r    = rows[i];
-        const nome = String(r[idx.nome] || '').trim();
-        if (!nome) continue;
-        parsed.push({
-          nome,
-          vigencia:  String(r[idx.vigencia]  || ''),
-          audiencia: String(r[idx.audiencia] || ''),
-          aplicados: parseIntBR(r[idx.aplicados]),
-          usados:    parseIntBR(r[idx.usados]),
-          unidades:  parseIntBR(r[idx.unidades]),
-          vendas:    parseBRL(r[idx.vendas]),
-          orcamento: parseBRL(r[idx.orcamento]),
-        });
-      }
-
-      cuponsData[acc] = parsed;
-      saveCuponsToStorage();
-      updateDropZoneStatus();
-      renderCuponsView();
-    } catch (err) {
-      alert('Erro ao ler o arquivo: ' + err.message);
-    }
-  };
-  reader.readAsArrayBuffer(file);
-}
-
-function updateDropZoneStatus() {
-  ['kdecor', 'comercial'].forEach(acc => {
-    const rows = cuponsData[acc] || [];
-    const statusEl = document.getElementById('drop-' + acc + '-status');
-    const zoneEl   = document.getElementById('drop-' + acc);
-    if (rows.length > 0) {
-      statusEl.textContent = rows.length + ' cupons carregados';
-      zoneEl.classList.add('loaded');
-    } else {
-      statusEl.textContent = 'Sem arquivo carregado';
-      zoneEl.classList.remove('loaded');
-    }
-  });
-}
-
-function getCuponRows(tab) {
-  if (tab === 'kdecor')    return (cuponsData.kdecor    || []).map(r => ({...r, conta: 'KDecor'}));
-  if (tab === 'comercial') return (cuponsData.comercial || []).map(r => ({...r, conta: 'Comercial'}));
-  return [
-    ...(cuponsData.kdecor    || []).map(r => ({...r, conta: 'KDecor'})),
-    ...(cuponsData.comercial || []).map(r => ({...r, conta: 'Comercial'})),
-  ];
-}
-
-function switchCuponTab(tab) {
-  currentCuponTab = tab;
-  document.querySelectorAll('.ctab').forEach(t => t.classList.remove('active'));
-  document.getElementById('ctab-' + tab).classList.add('active');
-  renderCuponsView();
-}
-
-function renderCuponsView() {
-  const rows = getCuponRows(currentCuponTab);
-  renderCuponsKPIs(rows);
-  renderCuponsBarChart(rows);
-  renderCuponsTable(rows);
-  renderCuponsInsights(rows);
-  if (cuponsSecondaryOpen) renderCuponsScatterChart(rows);
-}
-
-function renderCuponsKPIs(rows) {
-  const totalVendas    = rows.reduce((s, r) => s + r.vendas, 0);
-  const totalOrc       = rows.reduce((s, r) => s + r.orcamento, 0);
-  const totalAplicados = rows.reduce((s, r) => s + r.aplicados, 0);
-  const totalUsados    = rows.reduce((s, r) => s + r.usados, 0);
-  const pctDesc        = totalVendas > 0 ? (totalOrc / totalVendas * 100) : 0;
-  const taxaConv       = totalAplicados > 0 ? (totalUsados / totalAplicados * 100) : 0;
-
-  const grid = document.getElementById('kpi-cupons-view');
-  grid.innerHTML = '';
-  [
-    { label: 'Vendas c/ Cupom',     val: mFmtR(totalVendas), neg: false },
-    { label: 'Orçamento Consumido', val: mFmtR(totalOrc),    neg: true  },
-    { label: '% Desconto Médio',    val: mFmtP(pctDesc),     neg: false },
-    { label: 'Taxa de Conversão',   val: mFmtP(taxaConv),    neg: false },
-  ].forEach(k => {
-    const card = document.createElement('div');
-    card.className = 'kpi-card' + (k.neg ? ' kpi-neg' : '');
-    card.innerHTML = `<div class="kpi-label">${k.label}</div><div class="kpi-value" style="font-size:19px">${k.val}</div>`;
-    grid.appendChild(card);
-  });
-}
-
-function renderCuponsBarChart(rows) {
-  const sorted = [...rows].sort((a, b) => b.vendas - a.vendas);
-  const labels  = sorted.map(r => r.nome);
-  const vendas  = sorted.map(r => r.vendas);
-  const orc     = sorted.map(r => r.orcamento);
-  const height  = Math.max(200, sorted.length * 52 + 48);
-
-  document.getElementById('cupons-bar-wrap').style.height = height + 'px';
-
-  if (cuponCharts.bar) {
-    cuponCharts.bar.data.labels            = labels;
-    cuponCharts.bar.data.datasets[0].data  = vendas;
-    cuponCharts.bar.data.datasets[1].data  = orc;
-    cuponCharts.bar.update();
-    return;
-  }
-
-  const ctx = document.getElementById('chart-cupons-bar').getContext('2d');
-  cuponCharts.bar = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [
-        { label: 'Vendas Brutas', data: vendas, backgroundColor: 'rgba(27,200,212,0.55)', borderColor: '#1BC8D4', borderWidth: 1, borderRadius: 4 },
-        { label: 'Orçamento',     data: orc,    backgroundColor: 'rgba(220,38,38,0.35)',  borderColor: '#DC2626', borderWidth: 1, borderRadius: 4 },
-      ]
-    },
-    options: {
-      indexAxis: 'y',
-      responsive: true, maintainAspectRatio: false,
-      interaction: { mode: 'index', intersect: false },
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          backgroundColor: '#1E293B', titleColor: '#94A3B8', bodyColor: '#F8FAFC', padding: 10, cornerRadius: 8,
-          callbacks: { label: c => ` ${c.dataset.label}: ${mFmtR(c.raw)}` }
-        }
-      },
-      scales: {
-        x: { border:{display:false}, grid:{color:'#F1F5F9'}, ticks:{color:'#94A3B8',font:{size:11},callback:v=>mFmtRCompact(v)} },
-        y: { border:{display:false}, grid:{display:false},   ticks:{color:'#1A202C',font:{size:11},maxTicksLimit:30} }
-      }
-    }
-  });
-}
-
-function renderCuponsScatterChart(rows) {
-  const points = rows.map(r => ({ x: r.orcamento, y: r.vendas, nome: r.nome }));
-
-  if (cuponCharts.scatter) {
-    cuponCharts.scatter.data.datasets[0].data = points;
-    cuponCharts.scatter.update();
-    return;
-  }
-
-  const ctx = document.getElementById('chart-cupons-scatter').getContext('2d');
-  cuponCharts.scatter = new Chart(ctx, {
-    type: 'scatter',
-    data: {
-      datasets: [{
-        label: 'Cupons', data: points,
-        backgroundColor: 'rgba(27,200,212,0.55)', borderColor: '#1BC8D4', borderWidth: 2,
-        pointRadius: 6, pointHoverRadius: 9,
-      }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          backgroundColor: '#1E293B', titleColor: '#94A3B8', bodyColor: '#F8FAFC', padding: 10, cornerRadius: 8,
-          callbacks: {
-            title: c => c[0].raw.nome,
-            label: c => [`Orçamento: ${mFmtR(c.raw.x)}`, `Vendas: ${mFmtR(c.raw.y)}`],
-          }
-        }
-      },
-      scales: {
-        x: { border:{display:false}, grid:{color:'#F1F5F9'}, ticks:{color:'#94A3B8',font:{size:11},callback:v=>mFmtRCompact(v)}, title:{display:true,text:'Orçamento Consumido',color:'#94A3B8',font:{size:11}} },
-        y: { border:{display:false}, grid:{color:'#F1F5F9'}, ticks:{color:'#94A3B8',font:{size:11},callback:v=>mFmtRCompact(v)}, title:{display:true,text:'Vendas Brutas',color:'#94A3B8',font:{size:11}} }
-      }
-    }
-  });
-}
-
-function toggleCuponsSecondary() {
-  cuponsSecondaryOpen = !cuponsSecondaryOpen;
-  const sec = document.getElementById('cupons-secondary');
-  const btn = document.getElementById('btn-cupons-secondary');
-  if (cuponsSecondaryOpen) {
-    sec.style.display = 'block';
-    btn.textContent = '▲  Eficiência — Orçamento × Vendas';
-    requestAnimationFrame(() => {
-      renderCuponsScatterChart(getCuponRows(currentCuponTab));
-      cuponCharts.scatter && cuponCharts.scatter.resize();
-    });
-  } else {
-    sec.style.display = 'none';
-    btn.textContent = '▼  Eficiência — Orçamento × Vendas';
-  }
-}
-
-function cuponTableRow(r, cols) {
-  const pct  = r.vendas    > 0 ? mFmtP(r.orcamento / r.vendas * 100)    : '—';
-  const conv = r.aplicados > 0 ? mFmtP(r.usados    / r.aplicados * 100) : '—';
-  return `<td style="font-weight:500;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${r.nome}">${r.nome}</td>` +
-    `<td style="font-size:12px;color:var(--muted);max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.audiencia}</td>` +
-    `<td style="text-align:right">${r.aplicados.toLocaleString('pt-BR')}</td>` +
-    `<td style="text-align:right">${r.usados.toLocaleString('pt-BR')}</td>` +
-    `<td style="text-align:right;font-weight:700">${conv}</td>` +
-    `<td style="text-align:right">${r.unidades.toLocaleString('pt-BR')}</td>` +
-    `<td style="text-align:right;font-weight:700">${mFmtR(r.vendas)}</td>` +
-    `<td style="text-align:right">${mFmtR(r.orcamento)}</td>` +
-    `<td style="text-align:right">${pct}</td>`;
-}
-
-function cuponSubtotalRow(rows, label, cols, accent) {
-  const v = rows.reduce((s,r)=>s+r.vendas,0);
-  const o = rows.reduce((s,r)=>s+r.orcamento,0);
-  const a = rows.reduce((s,r)=>s+r.aplicados,0);
-  const u = rows.reduce((s,r)=>s+r.usados,0);
-  const n = rows.reduce((s,r)=>s+r.unidades,0);
-  const pct  = v > 0 ? mFmtP(o/v*100) : '—';
-  const conv = a > 0 ? mFmtP(u/a*100) : '—';
-  return `<tr style="background:${accent};font-weight:700;font-size:12px">` +
-    `<td colspan="2" style="padding:8px 14px;color:var(--text)">${label}</td>` +
-    `<td style="text-align:right;padding:8px 14px">${a.toLocaleString('pt-BR')}</td>` +
-    `<td style="text-align:right;padding:8px 14px">${u.toLocaleString('pt-BR')}</td>` +
-    `<td style="text-align:right;padding:8px 14px">${conv}</td>` +
-    `<td style="text-align:right;padding:8px 14px">${n.toLocaleString('pt-BR')}</td>` +
-    `<td style="text-align:right;padding:8px 14px">${mFmtR(v)}</td>` +
-    `<td style="text-align:right;padding:8px 14px">${mFmtR(o)}</td>` +
-    `<td style="text-align:right;padding:8px 14px">${pct}</td></tr>`;
-}
-
-function renderCuponsTable(rows) {
-  const isConsolidado = currentCuponTab === 'consolidado';
-  const COLS = 9;
-  const thead = document.getElementById('thead-cupons-detail');
-  thead.innerHTML =
-    '<th>Cupom</th><th>Audiência</th>' +
-    '<th style="text-align:right">Aplicados</th><th style="text-align:right">Usados</th>' +
-    '<th style="text-align:right">Conversão</th><th style="text-align:right">Unidades</th>' +
-    '<th style="text-align:right">Vendas Brutas</th><th style="text-align:right">Orçamento</th><th style="text-align:right">% Desconto</th>';
-
-  const tbody = document.getElementById('tbody-cupons-detail');
-  tbody.innerHTML = '';
-
-  if (isConsolidado) {
-    // ─── KDecor ───
-    const kd = [...(cuponsData.kdecor||[])].map(r=>({...r,conta:'KDecor'})).sort((a,b)=>b.vendas-a.vendas);
-    if (kd.length) {
-      const hdr = document.createElement('tr');
-      hdr.innerHTML = `<td colspan="${COLS}" style="background:#E0F7FA;color:#0E7490;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.6px;padding:8px 14px;border-top:2px solid #0E7490">KDecor — C02</td>`;
-      tbody.appendChild(hdr);
-      kd.forEach(r => { const tr=document.createElement('tr'); tr.innerHTML=cuponTableRow(r,COLS); tbody.appendChild(tr); });
-      tbody.insertAdjacentHTML('beforeend', cuponSubtotalRow(kd,'Subtotal KDecor',COLS,'#F0FDFA'));
-    }
-    // ─── Comercial ───
-    const com = [...(cuponsData.comercial||[])].map(r=>({...r,conta:'Comercial'})).sort((a,b)=>b.vendas-a.vendas);
-    if (com.length) {
-      const hdr = document.createElement('tr');
-      hdr.innerHTML = `<td colspan="${COLS}" style="background:#EDE9FE;color:#5B21B6;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.6px;padding:8px 14px;border-top:2px solid #5B21B6">Comercial — C01</td>`;
-      tbody.appendChild(hdr);
-      com.forEach(r => { const tr=document.createElement('tr'); tr.innerHTML=cuponTableRow(r,COLS); tbody.appendChild(tr); });
-      tbody.insertAdjacentHTML('beforeend', cuponSubtotalRow(com,'Subtotal Comercial',COLS,'#F5F3FF'));
-    }
-    // ─── Total geral ───
-    if (kd.length && com.length) {
-      tbody.insertAdjacentHTML('beforeend', cuponSubtotalRow([...kd,...com],'TOTAL GERAL',COLS,'#E2E8F0'));
-    }
-  } else {
-    const sorted = [...rows].sort((a,b)=>b.vendas-a.vendas);
-    sorted.forEach(r => { const tr=document.createElement('tr'); tr.innerHTML=cuponTableRow(r,COLS); tbody.appendChild(tr); });
-  }
-}
-
-function renderCuponsInsights(rows) {
-  const el = document.getElementById('cupons-insights-content');
-  if (!rows.length) {
-    el.innerHTML = '<div style="font-size:13px;color:var(--muted)">Carregue os arquivos para ver os insights.</div>';
-    return;
-  }
-
-  const insights = [];
-  const withConv  = rows.filter(r => r.aplicados > 0);
-  const withRoi   = rows.filter(r => r.orcamento > 0);
-  const sortedV   = [...rows].sort((a, b) => b.vendas - a.vendas);
-  const sortedC   = [...withConv].sort((a, b) => (b.usados/b.aplicados) - (a.usados/a.aplicados));
-  const sortedR   = [...withRoi].sort((a, b) => (b.vendas/b.orcamento) - (a.vendas/a.orcamento));
-  const lowConv   = withConv.filter(r => r.aplicados >= 100 && (r.usados / r.aplicados) < 0.05);
-
-  if (sortedC.length) {
-    const r = sortedC[0];
-    insights.push({ label: 'Melhor taxa de conversão', text: `<b>${r.nome}</b> converteu ${mFmtP(r.usados/r.aplicados*100)} dos aplicados (${r.usados.toLocaleString('pt-BR')} de ${r.aplicados.toLocaleString('pt-BR')}).` });
-  }
-  if (sortedR.length) {
-    const r = sortedR[0];
-    const roi = r.orcamento > 0 ? r.vendas / r.orcamento : 0;
-    insights.push({ label: 'Melhor retorno por real investido', text: `<b>${r.nome}</b> gerou ${mFmtR(roi)} em vendas para cada R$ 1,00 de orçamento consumido.` });
-  }
-  if (sortedV.length) {
-    const r = sortedV[0];
-    insights.push({ label: 'Maior volume de vendas', text: `<b>${r.nome}</b> liderou com ${mFmtR(r.vendas)} em vendas brutas.` });
-  }
-  if (lowConv.length) {
-    insights.push({ label: 'Baixa conversão — revisar', text: `${lowConv.length > 1 ? lowConv.length + ' cupons têm' : 'Cupom'} mais de 100 aplicações e conversão abaixo de 5%: <b>${lowConv.map(r=>r.nome).join(', ')}</b>.` });
-  }
-  if (currentCuponTab === 'consolidado' && (cuponsData.kdecor||[]).length && (cuponsData.comercial||[]).length) {
-    const vKD  = (cuponsData.kdecor||[]).reduce((s,r)=>s+r.vendas,0);
-    const vCOM = (cuponsData.comercial||[]).reduce((s,r)=>s+r.vendas,0);
-    const oKD  = (cuponsData.kdecor||[]).reduce((s,r)=>s+r.orcamento,0);
-    const oCOM = (cuponsData.comercial||[]).reduce((s,r)=>s+r.orcamento,0);
-    insights.push({ label: 'Comparativo C01 × C02', text: `Comercial (C01): ${mFmtR(vCOM)} em vendas / ${mFmtP(vCOM>0?oCOM/vCOM*100:0)} de desconto médio. KDecor (C02): ${mFmtR(vKD)} em vendas / ${mFmtP(vKD>0?oKD/vKD*100:0)} de desconto médio.` });
-  }
-
-  el.innerHTML = insights.map(i =>
-    `<div class="insight-item"><div class="insight-label">${i.label}</div><div class="insight-text">${i.text}</div></div>`
-  ).join('');
-}
-
-// ─────────────────────────────────────────────
-// MANUAL INPUT SECTIONS (Cupons & Afiliados)
-// ─────────────────────────────────────────────
-const _NOW    = new Date();
-const M_YEAR  = _NOW.getFullYear();
-const M_MONTH = _NOW.getMonth() + 1;
-const M_DAYS  = new Date(M_YEAR, M_MONTH, 0).getDate();
-
-const MANUAL_CFG = {
-  afiliados: {
-    kpiEl:      'kpi-manual-afiliados',
-    tbodyEl:    'tbody-afiliados',
-    chartEl:    'chart-afiliados-pct',
-    subEl:      'sub-chart-afiliados',
-    fields:     ['comissao', 'vendas'],
-    kpiTitles:  ['Comissão MTD', 'Vendas c/ Afiliados MTD', '% Médio', 'Dias Preenchidos'],
-    chartLabel: '% Comissão',
-  }
-};
-const manualCharts = {};
-
-function mKey(s)  { return `kithom_${s}_${M_YEAR}_${M_MONTH}`; }
-function mLoad(s) { try { return JSON.parse(localStorage.getItem(mKey(s)) || '{}'); } catch { return {}; } }
-function mSave(s, d) { localStorage.setItem(mKey(s), JSON.stringify(d)); }
-function mNum(v)  { const n = parseFloat(String(v || 0).replace(',', '.')); return isNaN(n) ? 0 : n; }
-function mFmtR(v) { return 'R$ ' + v.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2}); }
-function mFmtP(v) { return v.toFixed(2).replace('.', ',') + ' %'; }
-
-function buildManualTable(section) {
-  const cfg   = MANUAL_CFG[section];
-  const data  = mLoad(section);
-  const tbody = document.getElementById(cfg.tbodyEl);
-  tbody.innerHTML = '';
-  for (let d = 1; d <= M_DAYS; d++) {
-    const row = data[d] || {};
-    const v1  = row[cfg.fields[0]] ?? '';
-    const v2  = row[cfg.fields[1]] ?? '';
-    const n1  = mNum(v1), n2 = mNum(v2);
-    const pct = (n1 > 0 && n2 > 0) ? mFmtP(n1 / n2 * 100) : '—';
-    const tr  = document.createElement('tr');
-    tr.innerHTML = `
-      <td class="day-num">${String(d).padStart(2,'0')}</td>
-      <td><input class="num-input" type="text" data-day="${d}" data-field="${cfg.fields[0]}" data-sec="${section}" value="${v1}" placeholder="0,00"></td>
-      <td><input class="num-input" type="text" data-day="${d}" data-field="${cfg.fields[1]}" data-sec="${section}" value="${v2}" placeholder="0,00"></td>
-      <td class="pct-val" id="${section}-pct-${d}">${pct}</td>`;
-    tbody.appendChild(tr);
-  }
-  tbody.querySelectorAll('.num-input').forEach(inp => inp.addEventListener('change', onManualInput));
-}
-
-function onManualInput(e) {
-  const inp     = e.target;
-  const section = inp.dataset.sec;
-  const d       = parseInt(inp.dataset.day);
-  const field   = inp.dataset.field;
-  const cfg     = MANUAL_CFG[section];
-  const data    = mLoad(section);
-  if (!data[d]) data[d] = {};
-  data[d][field] = inp.value;
-  mSave(section, data);
-  const n1 = mNum(data[d][cfg.fields[0]] || 0);
-  const n2 = mNum(data[d][cfg.fields[1]] || 0);
-  document.getElementById(`${section}-pct-${d}`).textContent = (n1 > 0 && n2 > 0) ? mFmtP(n1 / n2 * 100) : '—';
-  updateManualKPIs(section);
-  updateManualChart(section);
-}
-
-function updateManualKPIs(section) {
-  const cfg  = MANUAL_CFG[section];
-  const data = mLoad(section);
-  let t1 = 0, t2 = 0, dias = 0;
-  for (let d = 1; d <= M_DAYS; d++) {
-    const row = data[d] || {};
-    const n1  = mNum(row[cfg.fields[0]] || 0);
-    const n2  = mNum(row[cfg.fields[1]] || 0);
-    if (n1 || n2) { t1 += n1; t2 += n2; dias++; }
-  }
-  const pct  = t2 > 0 ? t1 / t2 * 100 : 0;
-  const vals = [mFmtR(t1), mFmtR(t2), mFmtP(pct), `${dias} dias`];
-  const grid = document.getElementById(cfg.kpiEl);
-  grid.innerHTML = '';
-  cfg.kpiTitles.forEach((title, i) => {
-    const card = document.createElement('div');
-    card.className = 'kpi-card';
-    card.innerHTML = `<div class="kpi-label">${title}</div><div class="kpi-value" style="font-size:19px">${vals[i]}</div>`;
-    grid.appendChild(card);
-  });
-}
-
-function updateManualChart(section) {
-  const cfg  = MANUAL_CFG[section];
-  const data = mLoad(section);
-  const st   = ACC_STYLE.consolidado;
-  const xLbls = Array.from({length: M_DAYS}, (_, i) => i + 1);
-  const pcts  = [];
-  for (let d = 1; d <= M_DAYS; d++) {
-    const row = data[d] || {};
-    const n1  = mNum(row[cfg.fields[0]] || 0);
-    const n2  = mNum(row[cfg.fields[1]] || 0);
-    pcts.push((n1 > 0 && n2 > 0) ? parseFloat((n1 / n2 * 100).toFixed(2)) : null);
-  }
-  const valid  = pcts.filter(v => v !== null);
-  const avgPct = valid.length ? valid.reduce((a, b) => a + b, 0) / valid.length : 0;
-  document.getElementById(cfg.subEl).textContent = valid.length ? `Média do período: ${mFmtP(avgPct)}` : 'Sem dados ainda';
-
-  if (manualCharts[section]) {
-    manualCharts[section].data.datasets[0].data = pcts;
-    manualCharts[section].update();
-    return;
-  }
-  const ctx = document.getElementById(cfg.chartEl).getContext('2d');
-  manualCharts[section] = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: xLbls,
-      datasets: [{
-        label: cfg.chartLabel, data: pcts,
-        borderColor: st.main, borderWidth: 2, tension: 0.3,
-        pointRadius: 3, pointBackgroundColor: st.main,
-        fill: true, spanGaps: false,
-        backgroundColor: ctx2 => {
-          const g = ctx2.chart.ctx.createLinearGradient(0, 0, 0, ctx2.chart.height);
-          g.addColorStop(0, st.fill); g.addColorStop(1, 'rgba(0,0,0,0)'); return g;
-        }
-      }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      interaction: { mode: 'index', intersect: false },
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          backgroundColor: '#1E293B', titleColor: '#94A3B8', bodyColor: '#F8FAFC', padding: 10, cornerRadius: 8,
-          callbacks: {
-            title: c => `Dia ${c[0].label}`,
-            label: c => c.raw === null ? null : ` ${cfg.chartLabel}: ${mFmtP(c.raw)}`
-          }
-        }
-      },
-      scales: {
-        x: { border:{display:false}, grid:{color:'#F1F5F9'}, ticks:{color:'#94A3B8', font:{size:11}, maxTicksLimit:10} },
-        y: { border:{display:false}, grid:{color:'#F1F5F9'}, ticks:{color:'#94A3B8', font:{size:11}, callback: v => mFmtP(v)}, afterFit }
-      }
-    }
-  });
-}
-
-function showSalesContent(show) {
-  const d = show ? '' : 'none';
-  document.getElementById('kpi-grid').style.display     = d;
-  document.querySelector('.charts-stack').style.display = d;
-  if (show) requestAnimationFrame(() => Object.values(charts).forEach(c => c && c.resize()));
-}
-
-function showManualSection(section) {
-  document.querySelectorAll('.section-manual').forEach(el => el.style.display = 'none');
-  document.getElementById('section-' + section).style.display = 'block';
-  if (section === 'cupons') {
-    loadCuponsFromStorage();
-    updateDropZoneStatus();
-    renderCuponsView();
-  } else {
-    buildManualTable(section);
-    updateManualKPIs(section);
-    updateManualChart(section);
-  }
-}
 </script>
-
-
-</body></html>
+</body>
+</html>
