@@ -112,11 +112,11 @@
   .pct-val { font-weight: 700; color: var(--text); width: 110px; }
   .num-input { border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; font-size: 13px; color: var(--text); background: var(--bg); width: 150px; outline: none; transition: border-color 0.15s; text-align: right; }
   .num-input:focus { border-color: var(--accent); background: var(--card); }
-  .drop-zone { border: 2px dashed var(--border); border-radius: 12px; padding: 24px 20px; text-align: center; cursor: default; transition: border-color 0.2s, background 0.2s; background: var(--card); }
+  .drop-zone { border: 2px dashed var(--border); border-radius: 8px; padding: 10px 16px; text-align: center; cursor: default; transition: border-color 0.2s, background 0.2s; background: var(--card); }
   .drop-zone.drag-over { border-color: var(--accent); background: rgba(27,200,212,0.06); }
   .drop-zone.loaded { border-color: #059669; background: rgba(5,150,105,0.05); }
-  .drop-zone-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
-  .drop-zone-sub { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+  .drop-zone-title { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+  .drop-zone-sub { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
   .drop-zone-status { font-size: 12px; color: var(--muted); }
   .drop-zone.loaded .drop-zone-status { color: #059669; font-weight: 600; }
   .insight-item { padding: 12px 0; border-bottom: 1px solid var(--border); }
@@ -311,15 +311,6 @@
   <!-- ── CUPONS SECTION ── -->
   <div id="section-cupons" class="section-manual">
 
-    <!-- Sub-tabs -->
-    <div style="display:flex;align-items:center;margin-bottom:22px">
-      <div class="tabs" style="box-shadow:none;background:var(--bg);border:1px solid var(--border)">
-        <button class="tab active ctab" id="ctab-consolidado" onclick="switchCuponTab('consolidado')">Consolidado</button>
-        <button class="tab ctab" id="ctab-kdecor" onclick="switchCuponTab('kdecor')">KDecor</button>
-        <button class="tab ctab" id="ctab-comercial" onclick="switchCuponTab('comercial')">Comercial</button>
-      </div>
-    </div>
-
     <!-- Hidden file inputs -->
     <input type="file" id="file-kdecor" accept=".xlsx,.xls" style="display:none" onchange="handleCuponFileInput(event,'kdecor')">
     <input type="file" id="file-comercial" accept=".xlsx,.xls" style="display:none" onchange="handleCuponFileInput(event,'comercial')">
@@ -329,13 +320,13 @@
       <div class="drop-zone" id="drop-kdecor" ondrop="handleCuponDrop(event,'kdecor')" ondragover="handleCuponDragOver(event,'kdecor')" ondragleave="handleCuponDragLeave('kdecor')">
         <div class="drop-zone-title">KDecor — C02</div>
         <div class="drop-zone-sub">Arraste o arquivo Excel aqui ou</div>
-        <button class="btn-toggle" style="margin:6px auto 4px" onclick="document.getElementById('file-kdecor').click()">Selecionar arquivo</button>
+        <button class="btn-toggle" style="margin:4px auto 2px" onclick="document.getElementById('file-kdecor').click()">Selecionar arquivo</button>
         <div class="drop-zone-status" id="drop-kdecor-status">Sem arquivo carregado</div>
       </div>
       <div class="drop-zone" id="drop-comercial" ondrop="handleCuponDrop(event,'comercial')" ondragover="handleCuponDragOver(event,'comercial')" ondragleave="handleCuponDragLeave('comercial')">
         <div class="drop-zone-title">Comercial — C01</div>
         <div class="drop-zone-sub">Arraste o arquivo Excel aqui ou</div>
-        <button class="btn-toggle" style="margin:6px auto 4px" onclick="document.getElementById('file-comercial').click()">Selecionar arquivo</button>
+        <button class="btn-toggle" style="margin:4px auto 2px" onclick="document.getElementById('file-comercial').click()">Selecionar arquivo</button>
         <div class="drop-zone-status" id="drop-comercial-status">Sem arquivo carregado</div>
       </div>
     </div>
@@ -348,39 +339,6 @@
 
     <!-- KPIs -->
     <div class="kpi-grid" id="kpi-cupons-view" style="grid-template-columns:repeat(4,1fr);margin-bottom:22px"></div>
-
-    <!-- Bar chart -->
-    <div class="chart-card" style="margin-bottom:16px">
-      <div class="chart-header">
-        <div>
-          <div class="chart-title">Vendas e Orçamento por Cupom</div>
-          <div class="chart-subtitle">Ordenado por vendas brutas</div>
-        </div>
-        <div class="chart-legend">
-          <div class="legend-item"><div class="legend-dot bar" style="background:rgba(27,200,212,0.55)"></div>Vendas</div>
-          <div class="legend-item"><div class="legend-dot bar" style="background:rgba(220,38,38,0.35)"></div>Orçamento</div>
-        </div>
-      </div>
-      <div id="cupons-bar-wrap" style="position:relative;height:240px"><canvas id="chart-cupons-bar"></canvas></div>
-    </div>
-
-    <!-- Toggle scatter -->
-    <div class="toggle-row">
-      <button id="btn-cupons-secondary" class="btn-toggle" onclick="toggleCuponsSecondary()">▼&nbsp; Eficiência — Orçamento × Vendas</button>
-    </div>
-
-    <!-- Scatter (collapsible) -->
-    <div id="cupons-secondary" style="display:none;margin-top:16px">
-      <div class="chart-card">
-        <div class="chart-header">
-          <div>
-            <div class="chart-title">Eficiência — Orçamento × Vendas</div>
-            <div class="chart-subtitle">Canto superior esquerdo = maior retorno por real investido</div>
-          </div>
-        </div>
-        <div class="canvas-wrap tall"><canvas id="chart-cupons-scatter"></canvas></div>
-      </div>
-    </div>
 
     <!-- Table -->
     <div class="table-card" style="margin-top:16px">
@@ -786,9 +744,7 @@ document.addEventListener('DOMContentLoaded', init);
 // CUPONS SECTION — Excel drag-and-drop
 // ─────────────────────────────────────────────
 let cuponsData = { kdecor: [], comercial: [] };
-let currentCuponTab = 'consolidado';
 let cuponCharts = {};
-let cuponsSecondaryOpen = false;
 
 function cuponStorageKey() { return `kithom_cupons_${M_YEAR}_${M_MONTH}`; }
 
@@ -1006,29 +962,18 @@ function updateDropZoneStatus() {
   });
 }
 
-function getCuponRows(tab) {
-  if (tab === 'kdecor')    return (cuponsData.kdecor    || []).map(r => ({...r, conta: 'KDecor'}));
-  if (tab === 'comercial') return (cuponsData.comercial || []).map(r => ({...r, conta: 'Comercial'}));
+function getCuponRows() {
   return [
     ...(cuponsData.kdecor    || []).map(r => ({...r, conta: 'KDecor'})),
     ...(cuponsData.comercial || []).map(r => ({...r, conta: 'Comercial'})),
   ];
 }
 
-function switchCuponTab(tab) {
-  currentCuponTab = tab;
-  document.querySelectorAll('.ctab').forEach(t => t.classList.remove('active'));
-  document.getElementById('ctab-' + tab).classList.add('active');
-  renderCuponsView();
-}
-
 function renderCuponsView() {
-  const rows = getCuponRows(currentCuponTab);
+  const rows = getCuponRows();
   renderCuponsKPIs(rows);
-  renderCuponsBarChart(rows);
   renderCuponsTable(rows);
   renderCuponsInsights(rows);
-  if (cuponsSecondaryOpen) renderCuponsScatterChart(rows);
 }
 
 function renderCuponsKPIs(rows) {
@@ -1139,22 +1084,6 @@ function renderCuponsScatterChart(rows) {
   });
 }
 
-function toggleCuponsSecondary() {
-  cuponsSecondaryOpen = !cuponsSecondaryOpen;
-  const sec = document.getElementById('cupons-secondary');
-  const btn = document.getElementById('btn-cupons-secondary');
-  if (cuponsSecondaryOpen) {
-    sec.style.display = 'block';
-    btn.textContent = '▲  Eficiência — Orçamento × Vendas';
-    requestAnimationFrame(() => {
-      renderCuponsScatterChart(getCuponRows(currentCuponTab));
-      cuponCharts.scatter && cuponCharts.scatter.resize();
-    });
-  } else {
-    sec.style.display = 'none';
-    btn.textContent = '▼  Eficiência — Orçamento × Vendas';
-  }
-}
 
 function cuponTableRow(r, cols) {
   const pct  = r.vendas    > 0 ? mFmtP(r.orcamento / r.vendas * 100)    : '—';
@@ -1190,7 +1119,7 @@ function cuponSubtotalRow(rows, label, cols, accent) {
 }
 
 function renderCuponsTable(rows) {
-  const isConsolidado = currentCuponTab === 'consolidado';
+  const isConsolidado = true;
   const COLS = 9;
   const thead = document.getElementById('thead-cupons-detail');
   thead.innerHTML =
@@ -1215,6 +1144,7 @@ function renderCuponsTable(rows) {
     // ─── Comercial ───
     const com = [...(cuponsData.comercial||[])].map(r=>({...r,conta:'Comercial'})).sort((a,b)=>b.vendas-a.vendas);
     if (com.length) {
+      if (kd.length) tbody.insertAdjacentHTML('beforeend', `<tr><td colspan="${COLS}" style="height:14px;border:none;background:var(--bg)"></td></tr>`);
       const hdr = document.createElement('tr');
       hdr.innerHTML = `<td colspan="${COLS}" style="background:#EDE9FE;color:#5B21B6;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.6px;padding:8px 14px;border-top:2px solid #5B21B6">Comercial — C01</td>`;
       tbody.appendChild(hdr);
@@ -1223,6 +1153,7 @@ function renderCuponsTable(rows) {
     }
     // ─── Total geral ───
     if (kd.length && com.length) {
+      tbody.insertAdjacentHTML('beforeend', `<tr><td colspan="${COLS}" style="height:14px;border:none;background:var(--bg)"></td></tr>`);
       tbody.insertAdjacentHTML('beforeend', cuponSubtotalRow([...kd,...com],'TOTAL GERAL',COLS,'#E2E8F0'));
     }
   } else {
@@ -1231,21 +1162,15 @@ function renderCuponsTable(rows) {
   }
 }
 
-function renderCuponsInsights(rows) {
-  const el = document.getElementById('cupons-insights-content');
-  if (!rows.length) {
-    el.innerHTML = '<div style="font-size:13px;color:var(--muted)">Carregue os arquivos para ver os insights.</div>';
-    return;
-  }
-
+function buildInsights(rows, label) {
+  if (!rows.length) return '';
+  const withConv = rows.filter(r => r.aplicados > 0);
+  const withRoi  = rows.filter(r => r.orcamento > 0);
+  const sortedV  = [...rows].sort((a, b) => b.vendas - a.vendas);
+  const sortedC  = [...withConv].sort((a, b) => (b.usados/b.aplicados) - (a.usados/a.aplicados));
+  const sortedR  = [...withRoi].sort((a, b) => (b.vendas/b.orcamento) - (a.vendas/a.orcamento));
+  const lowConv  = withConv.filter(r => r.aplicados >= 100 && (r.usados / r.aplicados) < 0.05);
   const insights = [];
-  const withConv  = rows.filter(r => r.aplicados > 0);
-  const withRoi   = rows.filter(r => r.orcamento > 0);
-  const sortedV   = [...rows].sort((a, b) => b.vendas - a.vendas);
-  const sortedC   = [...withConv].sort((a, b) => (b.usados/b.aplicados) - (a.usados/a.aplicados));
-  const sortedR   = [...withRoi].sort((a, b) => (b.vendas/b.orcamento) - (a.vendas/a.orcamento));
-  const lowConv   = withConv.filter(r => r.aplicados >= 100 && (r.usados / r.aplicados) < 0.05);
-
   if (sortedC.length) {
     const r = sortedC[0];
     insights.push({ label: 'Melhor taxa de conversão', text: `<b>${r.nome}</b> converteu ${mFmtP(r.usados/r.aplicados*100)} dos aplicados (${r.usados.toLocaleString('pt-BR')} de ${r.aplicados.toLocaleString('pt-BR')}).` });
@@ -1262,17 +1187,26 @@ function renderCuponsInsights(rows) {
   if (lowConv.length) {
     insights.push({ label: 'Baixa conversão — revisar', text: `${lowConv.length > 1 ? lowConv.length + ' cupons têm' : 'Cupom'} mais de 100 aplicações e conversão abaixo de 5%: <b>${lowConv.map(r=>r.nome).join(', ')}</b>.` });
   }
-  if (currentCuponTab === 'consolidado' && (cuponsData.kdecor||[]).length && (cuponsData.comercial||[]).length) {
-    const vKD  = (cuponsData.kdecor||[]).reduce((s,r)=>s+r.vendas,0);
-    const vCOM = (cuponsData.comercial||[]).reduce((s,r)=>s+r.vendas,0);
-    const oKD  = (cuponsData.kdecor||[]).reduce((s,r)=>s+r.orcamento,0);
-    const oCOM = (cuponsData.comercial||[]).reduce((s,r)=>s+r.orcamento,0);
-    insights.push({ label: 'Comparativo C01 × C02', text: `Comercial (C01): ${mFmtR(vCOM)} em vendas / ${mFmtP(vCOM>0?oCOM/vCOM*100:0)} de desconto médio. KDecor (C02): ${mFmtR(vKD)} em vendas / ${mFmtP(vKD>0?oKD/vKD*100:0)} de desconto médio.` });
-  }
-
-  el.innerHTML = insights.map(i =>
+  const header = label ? `<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--accent);margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid var(--accent)">${label}</div>` : '';
+  return header + insights.map(i =>
     `<div class="insight-item"><div class="insight-label">${i.label}</div><div class="insight-text">${i.text}</div></div>`
   ).join('');
+}
+
+function renderCuponsInsights(rows) {
+  const el = document.getElementById('cupons-insights-content');
+  const hasKD  = (cuponsData.kdecor   ||[]).length > 0;
+  const hasCOM = (cuponsData.comercial||[]).length > 0;
+  if (!hasKD && !hasCOM) {
+    el.innerHTML = '<div style="font-size:13px;color:var(--muted)">Carregue os arquivos para ver os insights.</div>';
+    return;
+  }
+  const kdRows  = (cuponsData.kdecor   ||[]).map(r=>({...r,conta:'KDecor'}));
+  const comRows = (cuponsData.comercial||[]).map(r=>({...r,conta:'Comercial'}));
+  let html = '';
+  if (kdRows.length)  html += `<div style="margin-bottom:24px">${buildInsights(kdRows,  'KDecor — C02')}</div>`;
+  if (comRows.length) html += `<div>${buildInsights(comRows, 'Comercial — C01')}</div>`;
+  el.innerHTML = html;
 }
 
 // ─────────────────────────────────────────────
